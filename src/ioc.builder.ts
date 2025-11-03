@@ -8,6 +8,8 @@ import UsersService from "./lib/services/users.service";
 import ProfileController from "./routes/profile/profile.controller";
 import ProfileService from "./lib/services/profile.service";
 import { UserHashCredentialsService } from "./lib/services/user-hash-credentials.sevice";
+import GenreController from "./routes/genre/genre.controller";
+import GenreService from "./lib/services/genre.service";
 
 export async function constructIOC(): Promise<Container> {
   const ioc = new Container();
@@ -20,6 +22,7 @@ export async function constructIOC(): Promise<Container> {
   ioc.bind(AuthController).toSelf();
   ioc.bind(UsersController).toSelf();
   ioc.bind(ProfileController).toSelf();
+  ioc.bind(GenreController).toSelf();
 
   // </editor-fold>
 
@@ -28,6 +31,7 @@ export async function constructIOC(): Promise<Container> {
   ioc.bind(UsersService).toSelf();
   ioc.bind(ProfileService).toSelf();
   ioc.bind(UserHashCredentialsService).toSelf();
+  ioc.bind(GenreService).toSelf();
 
   // </editor-fold>
 

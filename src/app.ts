@@ -7,15 +7,21 @@ import { createUsersRoutes } from "./routes/users/users.routes";
 import { createProfileRoutes } from "./routes/profile/profile.routes";
 import { authMiddleware } from "./lib/utils/middlewares/auth.middleware";
 import { banMiddleware } from "./lib/utils/middlewares/ban.middleware";
+import {
+  createPublicGenreRoutes,
+  createProtectedGenreRoutes,
+} from "./routes/genre/genre.routes";
 
 function createAPIV1Routes(ioc: Container): Router {
   const router = Router();
 
   router.use("/auth", createAuthRoutes(ioc));
+  router.use("/genres", createPublicGenreRoutes(ioc));
 
   (router.use(authMiddleware({ strict: true })), router.use(banMiddleware));
   router.use("/users", createUsersRoutes(ioc));
   router.use("/profile", createProfileRoutes(ioc));
+  router.use("/genres", createProtectedGenreRoutes(ioc));
 
   return router;
 }
