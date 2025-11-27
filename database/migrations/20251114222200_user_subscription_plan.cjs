@@ -6,6 +6,9 @@ exports.up = async function(knex) {
     table.integer('user_id').unsigned().notNullable().references('id').inTable('users').onDelete('CASCADE');
     table.integer('subscription_plan_id').unsigned().notNullable().references('id').inTable('subscription_plans').onDelete('CASCADE');
 
+    table.enu('status', ['active', 'canceled', 'trialing']).notNullable();
+    table.string('stripe_subscription_id').nullable();
+
     table.timestamp('started_at').notNullable();
     table.timestamp('current_period_start').nullable();
     table.timestamp('current_period_end').nullable();

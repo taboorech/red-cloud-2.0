@@ -7,7 +7,7 @@ export interface ISubscriptionPlan {
   id: number;
   title: string;
   description: string;
-  stripe_price_id: string;
+  stripe_product_id: string;
   is_active: boolean;
   is_public: boolean;
   sort_order: number;
@@ -19,7 +19,7 @@ export class SubscriptionPlanModel extends Model implements ISubscriptionPlan {
   id!: number;
   title!: string;
   description!: string;
-  stripe_price_id!: string;
+  stripe_product_id!: string;
   is_active!: boolean;
   is_public!: boolean;
   sort_order!: number;
@@ -29,21 +29,21 @@ export class SubscriptionPlanModel extends Model implements ISubscriptionPlan {
       relation: Model.HasManyRelation,
       modelClass: SubscriptionPlanPriceModel,
       join: {
-        from: `${this.tableName}.id`,
-        to: `${SubscriptionPlanPriceModel.tableName}.subscription_plan_id`,
+        from: `subscription_plans.id`,
+        to: `subscription_plan_prices.subscription_plan_id`,
       },
     },
     users: {
       relation: Model.HasManyRelation,
       modelClass: UserModel,
       join: {
-        from: `${SubscriptionPlanModel.tableName}.id`,
+        from: `subscription_plans.id`,
         through: {
           modelClass: UserSubscriptionPlanModel,
-          from: `${UserSubscriptionPlanModel.tableName}.subscription_plan_id`,
-          to: `${UserSubscriptionPlanModel.tableName}.user_id`,
+          from: `user_subscription_plans.subscription_plan_id`,
+          to: `user_subscription_plans.user_id`,
         },
-        to: `${UserModel.tableName}.id`,
+        to: `user_model.id`,
       },
     },
   };

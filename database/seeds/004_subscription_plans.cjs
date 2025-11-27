@@ -3,14 +3,14 @@ const schema = process.env.DB_SCHEMA || 'public'
 const plans = [{
   title: 'Free Plan',
   description: 'A basic plan with limited features',
-  stripe_price_id: '',
+  stripe_product_id: '',
   is_active: true,
   is_public: true,
   sort_order: 1
 }, {
-  title: 'Pro Plan',
+  title: 'Premium Plan',
   description: 'A professional plan with advanced features',
-  stripe_price_id: '',
+  stripe_product_id: 'prod_TQYMkqCjhcsb9G',
   is_active: true,
   is_public: true,
   sort_order: 2

@@ -6,7 +6,7 @@ exports.up = async function(knex) {
     table.string('title').notNullable().unique();
     table.string('description').notNullable();
 
-    table.string('stripe_price_id').notNullable().unique();
+    table.string('stripe_product_id').notNullable().unique();
 
     table.boolean('is_active').defaultTo(true)
     table.boolean('is_public').defaultTo(true)

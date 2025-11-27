@@ -29,8 +29,8 @@ export class SubscriptionPlanPriceModel
       relation: Model.BelongsToOneRelation,
       modelClass: SubscriptionPlanModel,
       join: {
-        from: `${this.tableName}.subscription_plan_id`,
-        to: `${SubscriptionPlanModel.tableName}.id`,
+        from: `subscription_plan_prices.subscription_plan_id`,
+        to: `subscription_plans.id`,
       },
     },
   };

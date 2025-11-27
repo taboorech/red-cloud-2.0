@@ -8,6 +8,7 @@ exports.seed = async function(knex) {
     userPlans.push({
       user_id: user.id,
       subscription_plan_id: 1,
+      status: 'active',
       started_at: new Date(),
       current_period_start: new Date(),
       current_period_end: null,
@@ -15,5 +16,5 @@ exports.seed = async function(knex) {
     });
   })
 
-  await knex(`${schema}.user_subscription_plans`).insert(userPlans);
+  await knex(`${schema}.user_subscription_plan`).insert(userPlans);
 };
