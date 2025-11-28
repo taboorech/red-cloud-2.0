@@ -9,8 +9,7 @@ export async function initializeSubscriptionJobs(): Promise<void> {
       { type: "cleanup-expired" },
       {
         repeat: {
-          // pattern: '0 * * * *', // Every hour
-          pattern: "*/1 * * * *", // Every 1 minute
+          pattern: "0 * * * *", // Every hour
         },
         jobId: "cleanup-expired-subscriptions",
       },
@@ -22,8 +21,7 @@ export async function initializeSubscriptionJobs(): Promise<void> {
       { type: "cleanup-expired-trial" },
       {
         repeat: {
-          // pattern: '0 */6 * * *', // Every 6 hours
-          pattern: "*/1 * * * *", // Every 1 minute
+          pattern: "0 */6 * * *", // Every 6 hours
         },
         jobId: "cleanup-expired-trial",
       },
