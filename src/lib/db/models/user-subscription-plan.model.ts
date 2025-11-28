@@ -40,7 +40,7 @@ export class UserSubscriptionPlanModel
       relation: Model.BelongsToOneRelation,
       modelClass: SubscriptionPlanModel,
       join: {
-        from: `user_subscription_plans.subscription_plan_id`,
+        from: `user_subscription_plan.subscription_plan_id`,
         to: `subscription_plans.id`,
       },
     },
@@ -48,8 +48,8 @@ export class UserSubscriptionPlanModel
       relation: Model.BelongsToOneRelation,
       modelClass: UserModel,
       join: {
-        from: `user_subscription_plans.user_id`,
-        to: `user_model.id`,
+        from: `user_subscription_plan.user_id`,
+        to: `users.id`,
       },
     },
   };

@@ -52,7 +52,6 @@ export default class UsersService {
       });
   }
 
-  // TODO: check ban logic
   public async changeUserAccess({
     userId,
     action,

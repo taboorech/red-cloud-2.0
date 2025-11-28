@@ -2,6 +2,7 @@ import Model from "../knex-objection";
 import { UserBansModel } from "./user-bans.model";
 import { UserProviderCredentialsModel } from "./user-provider-credentials.model";
 import { UserRefreshTokenModel } from "./user-refresh-token.model";
+import { UserSubscriptionPlanModel } from "./user-subscription-plan.model";
 
 export interface IUser {
   id: string;
@@ -9,6 +10,7 @@ export interface IUser {
   email: string;
   avatar?: string;
   role: string;
+  subscription?: UserSubscriptionPlanModel;
 }
 
 export class UserModel extends Model implements IUser {
@@ -19,6 +21,7 @@ export class UserModel extends Model implements IUser {
   email!: string;
   avatar?: string;
   role!: string;
+  subscription?: UserSubscriptionPlanModel;
 
   static relationMappings = {
     userProviderCredentials: {
@@ -26,7 +29,7 @@ export class UserModel extends Model implements IUser {
       modelClass: UserProviderCredentialsModel,
       join: {
         from: "users.id",
-        to: "user_provider_credentials.userId",
+        to: "user_provider_credentials.user_id",
       },
     },
     userRefreshTokens: {
@@ -34,7 +37,7 @@ export class UserModel extends Model implements IUser {
       modelClass: UserRefreshTokenModel,
       join: {
         from: "users.id",
-        to: "user_refresh_tokens.userId",
+        to: "user_refresh_tokens.user_id",
       },
     },
     userBans: {
@@ -42,7 +45,15 @@ export class UserModel extends Model implements IUser {
       modelClass: UserBansModel,
       join: {
         from: "users.id",
-        to: "user_bans.userId",
+        to: "user_bans.user_id",
+      },
+    },
+    subscription: {
+      relation: Model.HasOneRelation,
+      modelClass: UserSubscriptionPlanModel,
+      join: {
+        from: "users.id",
+        to: "user_subscription_plan.user_id",
       },
     },
   };

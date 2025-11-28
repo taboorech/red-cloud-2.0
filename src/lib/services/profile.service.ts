@@ -6,13 +6,27 @@ import { AppError } from "../errors/app.error";
 import { UserProviderCredentialsModel } from "../db/models/user-provider-credentials.model";
 import { Provider } from "../enum/provider.enum";
 import * as bcrypt from "bcrypt";
+import { SubscriptionStatus } from "../constants/payment";
 
 @injectable()
 export default class ProfileService {
   constructor() {}
 
-  public async getProfile(userId: number): Promise<IUser> {
-    const user = await UserModel.query().findOne({ id: userId });
+  public async getProfile(
+    userId: number,
+    withSubscription: boolean,
+  ): Promise<IUser> {
+    const user = await UserModel.query()
+      .findOne(`${UserModel.tableName}.id`, userId)
+      .modify((builder) => {
+        if (withSubscription) {
+          builder
+            .withGraphFetched("subscription")
+            .modifyGraph("subscription", (subBuilder) => {
+              subBuilder.where("status", SubscriptionStatus.ACTIVE);
+            });
+        }
+      });
 
     if (!user) {
       throw new AppError(404, "User not found");
