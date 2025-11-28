@@ -11,14 +11,21 @@ import {
   createPublicGenreRoutes,
   createProtectedGenreRoutes,
 } from "./routes/genre/genre.routes";
+import {
+  createProtectedPaymentRoutes,
+  createPublicPaymentRoutes,
+} from "./routes/payment/payment.routes";
+import PaymentController from "./routes/payment/payment.controller";
 
 function createAPIV1Routes(ioc: Container): Router {
   const router = Router();
 
   router.use("/auth", createAuthRoutes(ioc));
   router.use("/genres", createPublicGenreRoutes(ioc));
+  router.use("/payment", createPublicPaymentRoutes(ioc));
 
   (router.use(authMiddleware({ strict: true })), router.use(banMiddleware));
+  router.use("/payment", createProtectedPaymentRoutes(ioc));
   router.use("/users", createUsersRoutes(ioc));
   router.use("/profile", createProfileRoutes(ioc));
   router.use("/genres", createProtectedGenreRoutes(ioc));
@@ -33,6 +40,13 @@ async function createServer(ioc: Container) {
     cors({
       origin: ["http://localhost:5173"],
     }),
+  );
+
+  const paymentWebhookCtrl = ioc.get(PaymentController);
+  app.post(
+    "/payment-webhook",
+    express.raw({ type: "application/json" }),
+    paymentWebhookCtrl.webhookHandler,
   );
 
   app.use(express.urlencoded({ extended: true }));

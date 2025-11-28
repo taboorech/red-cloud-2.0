@@ -7,6 +7,7 @@ import { constructIOC } from "./ioc.builder";
 import { ApplicationType } from "./lib/enum/application.enum";
 import { logger } from "./lib/logger";
 import { createSocketServer } from "./scoket/socket.server";
+import { initWorker } from "./worker/worker";
 
 async function initSockets(server?: http.Server) {
   const socketApp = await createSocketServer(server);
@@ -25,15 +26,20 @@ async function boot() {
   let serverName: string;
 
   try {
+    const ioc = await constructIOC();
     switch (appType) {
       case ApplicationType.Socket:
         await initSockets();
         serverName = ApplicationType.Socket;
+
+        break;
+      case ApplicationType.Worker:
+        await initWorker(ioc);
+        serverName = ApplicationType.Worker;
+
         break;
       case ApplicationType.API:
       default:
-        const ioc = await constructIOC();
-
         _server = await createServer(ioc);
 
         serverName = ApplicationType.API;

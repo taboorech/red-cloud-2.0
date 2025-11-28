@@ -2,7 +2,6 @@ const schema = process.env.DB_SCHEMA || 'public'
 
 const users = [
   {
-    id: 1,
     username: "Yehor_Admin",
     email: "karuselpopka@gmail.com",
     avatar: null,
@@ -11,7 +10,6 @@ const users = [
     updated_at: new Date(),
   },
   {
-    id: 2,
     username: "Operator",
     email: 'kiselovegor22@gmail.com',
     avatar: null,
@@ -20,7 +18,6 @@ const users = [
     updated_at: new Date(),
   },
   {
-    id: 3,
     username: "User",
     email: 'example@gmail.com',
     avatar: null,

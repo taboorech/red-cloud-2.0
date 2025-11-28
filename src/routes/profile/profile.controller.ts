@@ -14,9 +14,11 @@ export default class ProfileController {
   }
 
   public async getProfile(req: Request, res: Response) {
-    const { userId } = getProfileValidation.parse({ userId: req.user?.id });
+    const { userId, withSubscription } = getProfileValidation.parse({
+      userId: req.user?.id,
+    });
 
-    const user = await this.profileService.getProfile(userId);
+    const user = await this.profileService.getProfile(userId, withSubscription);
 
     res.json({
       status: "OK",
