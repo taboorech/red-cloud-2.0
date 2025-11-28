@@ -26,6 +26,7 @@ async function boot() {
   let serverName: string;
 
   try {
+    const ioc = await constructIOC();
     switch (appType) {
       case ApplicationType.Socket:
         await initSockets();
@@ -33,14 +34,12 @@ async function boot() {
 
         break;
       case ApplicationType.Worker:
-        await initWorker();
+        await initWorker(ioc);
         serverName = ApplicationType.Worker;
 
         break;
       case ApplicationType.API:
       default:
-        const ioc = await constructIOC();
-
         _server = await createServer(ioc);
 
         serverName = ApplicationType.API;

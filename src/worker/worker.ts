@@ -3,13 +3,13 @@ import { redis } from "../lib/db/redis.client";
 import { logger } from "../lib/logger";
 import { QueueName } from "../lib/constants/queue";
 import { initializeSubscriptionJobs } from "./jobs/subscription.jobs";
-import {
-  cleanupExpiredSubscriptions,
-  cleanupExpiredTrial,
-} from "./handlers/subscription";
+import { Container } from "inversify";
+import { SubscriptionJobHandler } from "./handlers/subscription";
 
-export const initWorker = async () => {
+export const initWorker = async (ioc: Container) => {
   await initializeSubscriptionJobs();
+
+  const subscriptionJobHandler = ioc.get(SubscriptionJobHandler);
 
   const worker = new Worker(
     QueueName.DEFAULT,
@@ -17,10 +17,10 @@ export const initWorker = async () => {
       try {
         switch (job.name) {
           case "cleanup-expired":
-            await cleanupExpiredSubscriptions();
+            await subscriptionJobHandler.cleanupExpiredSubscriptions();
             break;
           case "cleanup-expired-trial":
-            await cleanupExpiredTrial();
+            await subscriptionJobHandler.cleanupExpiredTrial();
             break;
           default:
             logger().warn(`Unknown job: ${job.name}`);

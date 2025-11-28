@@ -12,12 +12,14 @@ import GenreController from "./routes/genre/genre.controller";
 import GenreService from "./lib/services/genre.service";
 import PaymentController from "./routes/payment/payment.controller";
 import { PaymentService } from "./lib/services/payment.service";
+import { SubscriptionJobHandler } from "./worker/handlers/subscription";
 
 export async function constructIOC(): Promise<Container> {
   const ioc = new Container();
 
   // <editor-fold desc="System">
   ioc.bind(GoogleClient).toSelf();
+  ioc.bind(SubscriptionJobHandler).toSelf().inSingletonScope();
   // </editor-fold>
 
   // <editor-fold desc="Controllers">
