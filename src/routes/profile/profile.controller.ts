@@ -2,6 +2,7 @@ import ProfileService from "@app/lib/services/profile.service";
 import {
   changeUserPasswordValidation,
   getProfileValidation,
+  updateProfileSchema,
 } from "@app/lib/validation/profile.scheme";
 import { Request, Response } from "express";
 import { inject, injectable } from "inversify";
@@ -10,6 +11,7 @@ import { inject, injectable } from "inversify";
 export default class ProfileController {
   constructor(@inject(ProfileService) private profileService: ProfileService) {
     this.getProfile = this.getProfile.bind(this);
+    this.updateProfile = this.updateProfile.bind(this);
     this.changeUserPassword = this.changeUserPassword.bind(this);
   }
 
@@ -23,6 +25,20 @@ export default class ProfileController {
     res.json({
       status: "OK",
       data: user,
+    });
+  }
+
+  public async updateProfile(req: Request, res: Response) {
+    const parsed = updateProfileSchema.parse({
+      userId: req.user?.id,
+      ...req.body,
+    });
+
+    const updatedUser = await this.profileService.updateProfile(parsed);
+
+    res.json({
+      status: "OK",
+      data: updatedUser,
     });
   }
 

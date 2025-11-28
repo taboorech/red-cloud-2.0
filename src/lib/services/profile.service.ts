@@ -1,6 +1,9 @@
 import { injectable } from "inversify";
 import z from "zod";
-import { changeUserPasswordValidation } from "../validation/profile.scheme";
+import {
+  changeUserPasswordValidation,
+  updateProfileSchema,
+} from "../validation/profile.scheme";
 import { IUser, UserModel } from "../db/models/user.model";
 import { AppError } from "../errors/app.error";
 import { UserProviderCredentialsModel } from "../db/models/user-provider-credentials.model";
@@ -33,6 +36,25 @@ export default class ProfileService {
     }
 
     return user;
+  }
+
+  public async updateProfile({
+    userId,
+    username,
+    country,
+  }: z.infer<typeof updateProfileSchema>): Promise<IUser> {
+    const user = await UserModel.query().findOne({ id: userId });
+
+    if (!user) {
+      throw new AppError(404, "User not found");
+    }
+
+    const updatedUser = await user.$query().patchAndFetch({
+      username,
+      country,
+    });
+
+    return updatedUser;
   }
 
   public async changeUserPassword({

@@ -54,7 +54,7 @@ export class SongService {
 
     const newSong = await SongModel.query().insertAndFetch({
       title,
-      associated_country: language,
+      language,
       duration_seconds: duration,
       url: file.path,
       metadata: releaseYear ? { release_year: releaseYear } : undefined,
@@ -76,7 +76,7 @@ export class SongService {
 
     const updatedSong = await song.$query().patchAndFetch({
       title,
-      associated_country: language,
+      language,
       duration_seconds: duration,
     });
 

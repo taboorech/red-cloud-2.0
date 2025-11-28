@@ -7,7 +7,7 @@ interface ISongMetadata {
 export interface ISong {
   id: number;
   title: string;
-  associated_country?: string;
+  language?: string;
   duration_seconds: number;
   url: string;
   metadata?: ISongMetadata;
@@ -18,7 +18,7 @@ export class SongModel extends Model implements ISong {
 
   id!: number;
   title!: string;
-  associated_country?: string;
+  language?: string;
   duration_seconds!: number;
   url!: string;
   metadata?: ISongMetadata;

@@ -42,6 +42,7 @@ export class AuthService {
         username: profile.name,
         avatar: profile.avatar,
         role: UserRole.USER,
+        country: profile.locale,
       });
     }
 
@@ -131,10 +132,12 @@ export class AuthService {
     username,
     password,
     browser,
+    country,
   }: {
     email: string;
     username: string;
     password: string;
+    country?: string;
     browser: string;
   }): Promise<IInternalTokens> {
     let user = await UserModel.query().findOne({
@@ -149,6 +152,7 @@ export class AuthService {
       email,
       username,
       role: UserRole.USER,
+      country,
     });
 
     const hashPassword = await bcrypt.hash(

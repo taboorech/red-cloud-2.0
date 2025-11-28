@@ -10,6 +10,7 @@ export interface IUser {
   email: string;
   avatar?: string;
   role: string;
+  country?: string;
   subscription?: UserSubscriptionPlanModel;
 }
 
@@ -21,6 +22,7 @@ export class UserModel extends Model implements IUser {
   email!: string;
   avatar?: string;
   role!: string;
+  country?: string;
   subscription?: UserSubscriptionPlanModel;
 
   static relationMappings = {
