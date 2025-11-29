@@ -6,8 +6,18 @@ const songIdSchema = zod.object({
   songId: zod.number().int().positive(),
 });
 
-const getSongSchema = songIdSchema;
-const getSongsSchema = paginationValidation;
+const genreSchema = zod.array(zod.number().int().positive());
+const getSongsSameFieldsSchema = zod.object({
+  withGenres: zod.boolean().optional().default(true),
+});
+
+const getSongSchema = getSongsSameFieldsSchema.extend(songIdSchema.shape);
+const getSongsSchema = zod
+  .object({
+    genres: genreSchema.optional(),
+  })
+  .extend(getSongsSameFieldsSchema.shape)
+  .extend(paginationValidation.shape);
 const createSongSchema = zod.object({
   title: zod.string().min(1).max(255),
   description: zod.string().optional(),
@@ -16,7 +26,7 @@ const createSongSchema = zod.object({
   duration: zod.number().int().positive(),
   releaseYear: zod.number().int().positive().optional(),
   isActive: zod.boolean().optional(),
-  genres: zod.array(zod.number().int().positive()).optional(),
+  genres: genreSchema.optional(),
   authors: zod
     .array(
       zod

@@ -12,7 +12,15 @@ import { SongGenresModel } from "../db/models/song-genres.model";
 export class SongService {
   constructor() {}
 
-  public async getSong(userId: number, songId: number) {
+  public async getSong({
+    userId,
+    songId,
+    withGenres,
+  }: {
+    userId: number;
+    songId: number;
+    withGenres?: boolean;
+  }) {
     const song = await SongModel.query()
       .findById(songId)
       .where((builder) => {
@@ -28,6 +36,11 @@ export class SongService {
               .where(`${SongAuthorsModel.tableName}.user_id`, userId),
           );
       })
+      .modify((builder) => {
+        if (withGenres) {
+          builder.withGraphFetched("genres");
+        }
+      })
       .withGraphFetched("authors");
 
     return song;
@@ -35,7 +48,14 @@ export class SongService {
 
   public async getSongs(
     userId: number,
-    { limit, offset, ids, search }: z.infer<typeof getSongsSchema>,
+    {
+      limit,
+      offset,
+      ids,
+      search,
+      genres,
+      withGenres,
+    }: z.infer<typeof getSongsSchema>,
   ) {
     const songs = await SongModel.query()
       .modify((builder) => {
@@ -50,6 +70,20 @@ export class SongService {
         }
         if (offset) {
           builder.offset(offset);
+        }
+        if (genres) {
+          builder.whereExists(
+            SongGenresModel.query()
+              .select(1)
+              .whereColumn(
+                `${SongGenresModel.tableName}.song_id`,
+                `${SongModel.tableName}.id`,
+              )
+              .whereIn(`${SongGenresModel.tableName}.genre_id`, genres),
+          );
+        }
+        if (withGenres) {
+          builder.withGraphFetched("genres");
         }
       })
       .where((builder) => {
@@ -155,7 +189,7 @@ export class SongService {
       image,
     }: z.infer<typeof updateSongSchema> & { image?: Express.Multer.File },
   ) {
-    const song = await this.getSong(userId, songId);
+    const song = await this.getSong({ userId, songId });
     if (!song) {
       throw new AppError(404, "Song not found");
     }
@@ -257,7 +291,7 @@ export class SongService {
   }
 
   public async deleteSong(userId: number, songId: number) {
-    const song = await this.getSong(userId, songId);
+    const song = await this.getSong({ userId, songId });
     if (!song) {
       throw new AppError(404, "Song not found");
     }

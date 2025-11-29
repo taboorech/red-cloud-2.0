@@ -19,9 +19,13 @@ export class SongController {
   }
 
   public async getSong(req: Request, res: Response) {
-    const { songId } = getSongSchema.parse(req.params);
+    const { songId, withGenres } = getSongSchema.parse(req.params);
 
-    const song = await this.songService.getSong(req.user!.id, songId);
+    const song = await this.songService.getSong({
+      userId: req.user!.id,
+      songId,
+      withGenres,
+    });
 
     res.json({
       status: "OK",

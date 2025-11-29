@@ -1,5 +1,7 @@
 import Model from "../knex-objection";
+import { GenreModel } from "./genres.model";
 import { SongAuthorsModel } from "./song-authors.model";
+import { SongGenresModel } from "./song-genres.model";
 
 interface ISongMetadata {
   release_year?: number;
@@ -47,6 +49,18 @@ export class SongModel extends Model implements ISong {
         join: {
           from: `${this.tableName}.id`,
           to: `${SongAuthorsModel.tableName}.song_id`,
+        },
+      },
+      genres: {
+        relation: Model.ManyToManyRelation,
+        modelClass: GenreModel,
+        join: {
+          from: `${this.tableName}.id`,
+          through: {
+            from: `${SongGenresModel.tableName}.song_id`,
+            to: `${SongGenresModel.tableName}.genre_id`,
+          },
+          to: `${GenreModel.tableName}.id`,
         },
       },
     };
