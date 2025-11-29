@@ -75,6 +75,7 @@ export class UserModel extends Model implements IUser {
         to: `${SongModel.tableName}.id`,
       },
       modify: (qb: QueryBuilder<SongModel>) => {
+        // TODO: Select title, description, image, url only
         qb.select(`${SongModel.tableName}.*`)
           .select(
             Model.raw(`

@@ -21,7 +21,7 @@ export class SongController {
   public async getSong(req: Request, res: Response) {
     const { songId } = getSongSchema.parse(req.params);
 
-    const song = await this.songService.getSong(songId);
+    const song = await this.songService.getSong(req.user!.id, songId);
 
     res.json({
       status: "OK",
@@ -32,7 +32,7 @@ export class SongController {
   public async getSongs(req: Request, res: Response) {
     const data = getSongsSchema.parse(req.query);
 
-    const songs = await this.songService.getSongs(data);
+    const songs = await this.songService.getSongs(req.user!.id, data);
 
     res.json({
       status: "OK",
@@ -48,7 +48,7 @@ export class SongController {
       authors: parsedAuthors,
     });
 
-    const newSong = await this.songService.createSong({
+    const newSong = await this.songService.createSong(req.user!.id, {
       ...data,
       file: req.file,
     });
@@ -65,7 +65,7 @@ export class SongController {
       ...req.body,
     });
 
-    const updatedSong = await this.songService.updateSong(data);
+    const updatedSong = await this.songService.updateSong(req.user!.id, data);
 
     res.json({
       status: "OK",
@@ -76,7 +76,7 @@ export class SongController {
   public async deleteSong(req: Request, res: Response) {
     const { songId } = deleteSongSchema.parse(req.params);
 
-    await this.songService.deleteSong(songId);
+    await this.songService.deleteSong(req.user!.id, songId);
 
     res.json({
       status: "OK",

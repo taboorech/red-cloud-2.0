@@ -11,20 +11,31 @@ import { SongAuthorsModel } from "../db/models/song-authors.model";
 export class SongService {
   constructor() {}
 
-  public async getSong(id: number) {
+  public async getSong(userId: number, songId: number) {
     const song = await SongModel.query()
-      .findById(id)
+      .findById(songId)
+      .where((builder) => {
+        builder
+          .where(`${SongModel.tableName}.is_active`, true)
+          .orWhereExists(
+            SongAuthorsModel.query()
+              .select(1)
+              .whereColumn(
+                `${SongAuthorsModel.tableName}.song_id`,
+                `${SongModel.tableName}.id`,
+              )
+              .where(`${SongAuthorsModel.tableName}.user_id`, userId),
+          );
+      })
       .withGraphFetched("authors");
 
     return song;
   }
 
-  public async getSongs({
-    limit,
-    offset,
-    ids,
-    search,
-  }: z.infer<typeof getSongsSchema>) {
+  public async getSongs(
+    userId: number,
+    { limit, offset, ids, search }: z.infer<typeof getSongsSchema>,
+  ) {
     const songs = await SongModel.query()
       .modify((builder) => {
         if (ids) {
@@ -40,28 +51,54 @@ export class SongService {
           builder.offset(offset);
         }
       })
+      .where((builder) => {
+        builder
+          .where(`${SongModel.tableName}.is_active`, true)
+          .orWhereExists(
+            SongAuthorsModel.query()
+              .select(1)
+              .whereColumn(
+                `${SongAuthorsModel.tableName}.song_id`,
+                `${SongModel.tableName}.id`,
+              )
+              .where(`${SongAuthorsModel.tableName}.user_id`, userId),
+          );
+      })
       .withGraphFetched("authors");
 
     return songs;
   }
 
-  public async createSong({
-    title,
-    language,
-    duration,
-    releaseYear,
-    authors: requestedAuthors,
-    file,
-  }: z.infer<typeof createSongSchema> & { file?: Express.Multer.File }) {
+  public async createSong(
+    userId: number,
+    {
+      title,
+      description,
+      text,
+      language,
+      duration,
+      releaseYear,
+      isActive,
+      authors: requestedAuthors,
+      file,
+    }: z.infer<typeof createSongSchema> & { file?: Express.Multer.File },
+  ) {
     if (!file) {
       throw new AppError(400, "File is required");
     }
 
+    if (!requestedAuthors?.find((a) => a.userId === userId)) {
+      throw new AppError(403, "You must be an author of the song");
+    }
+
     const newSong = await SongModel.query().insertAndFetch({
       title,
+      description,
+      text,
       language,
       duration_seconds: duration,
       url: file.path,
+      is_active: isActive ?? true,
       metadata: releaseYear ? { release_year: releaseYear } : undefined,
     });
 
@@ -80,22 +117,39 @@ export class SongService {
     return { ...newSong, authors };
   }
 
-  public async updateSong({
-    songId,
-    title,
-    language,
-    duration,
-    authors: requestedAuthors,
-  }: z.infer<typeof updateSongSchema>) {
-    const song = await this.getSong(songId);
+  public async updateSong(
+    userId: number,
+    {
+      songId,
+      title,
+      description,
+      text,
+      language,
+      duration,
+      releaseYear,
+      isActive,
+      authors: requestedAuthors,
+    }: z.infer<typeof updateSongSchema>,
+  ) {
+    const song = await this.getSong(userId, songId);
     if (!song) {
       throw new AppError(404, "Song not found");
     }
 
+    if (song.authors?.every((author) => author.user_id !== userId)) {
+      throw new AppError(403, "You are not authorized to update this song");
+    }
+
     const updatedSong = await song.$query().patchAndFetch({
       title,
+      description,
+      text,
       language,
       duration_seconds: duration,
+      is_active: isActive,
+      metadata: releaseYear
+        ? { ...(song.metadata || {}), release_year: releaseYear }
+        : song.metadata,
     });
 
     const existingAuthors = await SongAuthorsModel.query().where(
@@ -143,10 +197,14 @@ export class SongService {
     return { ...updatedSong, authors: updatedAuthors };
   }
 
-  public async deleteSong(id: number) {
-    const song = await this.getSong(id);
+  public async deleteSong(userId: number, songId: number) {
+    const song = await this.getSong(userId, songId);
     if (!song) {
       throw new AppError(404, "Song not found");
+    }
+
+    if (song.authors?.every((author) => author.user_id !== userId)) {
+      throw new AppError(403, "You are not authorized to delete this song");
     }
 
     await song.$query().delete();

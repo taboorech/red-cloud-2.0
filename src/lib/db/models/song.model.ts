@@ -8,9 +8,12 @@ interface ISongMetadata {
 export interface ISong {
   id: number;
   title: string;
+  description?: string;
+  text?: string;
   language?: string;
   duration_seconds: number;
   url: string;
+  is_active: boolean;
   metadata?: ISongMetadata;
   authors?: SongAuthorsModel[];
 
@@ -23,9 +26,12 @@ export class SongModel extends Model implements ISong {
 
   id!: number;
   title!: string;
+  description?: string;
+  text?: string;
   language?: string;
   duration_seconds!: number;
   url!: string;
+  is_active!: boolean;
   metadata?: ISongMetadata;
   authors?: SongAuthorsModel[];
 

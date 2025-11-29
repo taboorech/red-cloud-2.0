@@ -10,9 +10,12 @@ const getSongSchema = songIdSchema;
 const getSongsSchema = paginationValidation;
 const createSongSchema = zod.object({
   title: zod.string().min(1).max(255),
+  description: zod.string().optional(),
+  text: zod.string().optional(),
   language: zod.string(),
   duration: zod.number().int().positive(),
   releaseYear: zod.number().int().positive().optional(),
+  isActive: zod.boolean().optional(),
   authors: zod
     .array(
       zod
