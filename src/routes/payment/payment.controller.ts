@@ -79,8 +79,6 @@ export default class PaymentController {
     const signature = req.headers["stripe-signature"] as string;
     const payload = req.body;
 
-    console.log("fdfsfds");
-
     await this.paymentService.webhookHandler(payload, signature);
 
     res.json({ status: "OK" });

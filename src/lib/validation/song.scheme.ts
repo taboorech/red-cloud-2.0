@@ -16,6 +16,7 @@ const createSongSchema = zod.object({
   duration: zod.number().int().positive(),
   releaseYear: zod.number().int().positive().optional(),
   isActive: zod.boolean().optional(),
+  genres: zod.array(zod.number().int().positive()).optional(),
   authors: zod
     .array(
       zod

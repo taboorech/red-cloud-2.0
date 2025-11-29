@@ -7,6 +7,7 @@ import {
 } from "../validation/song.scheme";
 import { AppError } from "../errors/app.error";
 import { SongAuthorsModel } from "../db/models/song-authors.model";
+import { SongGenresModel } from "../db/models/song-genres.model";
 
 export class SongService {
   constructor() {}
@@ -80,6 +81,7 @@ export class SongService {
       releaseYear,
       isActive,
       authors: requestedAuthors,
+      genres: requestedGenres,
       song,
       image,
     }: z.infer<typeof createSongSchema> & {
@@ -123,6 +125,17 @@ export class SongService {
         )
       : [];
 
+    requestedGenres?.length
+      ? await Promise.all(
+          requestedGenres.map(async (genreId) => {
+            return await SongGenresModel.query().insert({
+              song_id: newSong.id,
+              genre_id: genreId,
+            });
+          }),
+        )
+      : [];
+
     return { ...newSong, authors };
   }
 
@@ -138,6 +151,7 @@ export class SongService {
       releaseYear,
       isActive,
       authors: requestedAuthors,
+      genres: requestedGenres,
       image,
     }: z.infer<typeof updateSongSchema> & { image?: Express.Multer.File },
   ) {
@@ -170,12 +184,12 @@ export class SongService {
         : song.metadata,
     });
 
-    const existingAuthors = await SongAuthorsModel.query().where(
-      "song_id",
-      songId,
-    );
-
     if (requestedAuthors) {
+      const existingAuthors = await SongAuthorsModel.query().where(
+        "song_id",
+        songId,
+      );
+
       await Promise.all([
         await SongAuthorsModel.query()
           .where("song_id", songId)
@@ -200,6 +214,33 @@ export class SongService {
                 song_id: songId,
                 user_id: author.userId,
                 role: author.role,
+              });
+            }
+          }),
+        ),
+      ]);
+    }
+
+    if (requestedGenres) {
+      const existingGenres = await SongGenresModel.query().where(
+        "song_id",
+        songId,
+      );
+
+      await Promise.all([
+        await SongGenresModel.query()
+          .where("song_id", songId)
+          .whereNotIn("genre_id", requestedGenres)
+          .delete(),
+        await Promise.all(
+          requestedGenres.map(async (genreId) => {
+            const existingGenre = existingGenres.find(
+              (g) => g.genre_id === genreId,
+            );
+            if (!existingGenre) {
+              await SongGenresModel.query().insert({
+                song_id: songId,
+                genre_id: genreId,
               });
             }
           }),

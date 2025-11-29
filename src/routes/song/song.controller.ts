@@ -41,11 +41,13 @@ export class SongController {
   }
 
   public async createSong(req: Request, res: Response) {
-    const { authors } = req.body;
+    const { authors, genres } = req.body;
     const parsedAuthors = authors ? JSON.parse(authors) : undefined;
+    const parsedGenres = genres ? JSON.parse(genres) : undefined;
     const data = createSongSchema.parse({
       ...req.body,
       authors: parsedAuthors,
+      genres: parsedGenres,
     });
 
     const files = req.files as {
@@ -69,12 +71,14 @@ export class SongController {
   }
 
   public async updateSong(req: Request, res: Response) {
-    const { authors } = req.body;
+    const { authors, genres } = req.body;
     const parsedAuthors = authors ? JSON.parse(authors) : undefined;
+    const parsedGenres = genres ? JSON.parse(genres) : undefined;
     const data = updateSongSchema.parse({
       ...req.params,
       ...req.body,
       authors: parsedAuthors,
+      genres: parsedGenres,
     });
 
     const updatedSong = await this.songService.updateSong(req.user!.id, {
