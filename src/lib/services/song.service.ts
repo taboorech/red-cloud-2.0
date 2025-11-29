@@ -80,11 +80,19 @@ export class SongService {
       releaseYear,
       isActive,
       authors: requestedAuthors,
-      file,
-    }: z.infer<typeof createSongSchema> & { file?: Express.Multer.File },
+      song,
+      image,
+    }: z.infer<typeof createSongSchema> & {
+      song?: Express.Multer.File;
+      image?: Express.Multer.File;
+    },
   ) {
-    if (!file) {
-      throw new AppError(400, "File is required");
+    if (!song) {
+      throw new AppError(400, "Song file is required");
+    }
+
+    if (!image) {
+      throw new AppError(400, "Image file is required");
     }
 
     if (!requestedAuthors?.find((a) => a.userId === userId)) {
@@ -97,7 +105,8 @@ export class SongService {
       text,
       language,
       duration_seconds: duration,
-      url: file.path,
+      url: song.path,
+      image_url: image?.path,
       is_active: isActive ?? true,
       metadata: releaseYear ? { release_year: releaseYear } : undefined,
     });
@@ -129,7 +138,8 @@ export class SongService {
       releaseYear,
       isActive,
       authors: requestedAuthors,
-    }: z.infer<typeof updateSongSchema>,
+      image,
+    }: z.infer<typeof updateSongSchema> & { image?: Express.Multer.File },
   ) {
     const song = await this.getSong(userId, songId);
     if (!song) {
@@ -140,6 +150,13 @@ export class SongService {
       throw new AppError(403, "You are not authorized to update this song");
     }
 
+    if (
+      requestedAuthors &&
+      !requestedAuthors.find((a) => a.userId === userId)
+    ) {
+      throw new AppError(403, "You must be an author of the song");
+    }
+
     const updatedSong = await song.$query().patchAndFetch({
       title,
       description,
@@ -147,6 +164,7 @@ export class SongService {
       language,
       duration_seconds: duration,
       is_active: isActive,
+      image_url: image ? image.path : song.image_url,
       metadata: releaseYear
         ? { ...(song.metadata || {}), release_year: releaseYear }
         : song.metadata,

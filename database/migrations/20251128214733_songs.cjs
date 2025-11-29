@@ -9,6 +9,7 @@ exports.up = async function(knex) {
     table.string('language').nullable();
     table.integer('duration_seconds').notNullable();
     table.string('url').notNullable();
+    table.string('image_url').nullable();
     table.boolean('is_active').notNullable().defaultTo(true);
     table.jsonb('metadata').nullable();
 

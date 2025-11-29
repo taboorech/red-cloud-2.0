@@ -13,6 +13,7 @@ export interface ISong {
   language?: string;
   duration_seconds: number;
   url: string;
+  image_url?: string;
   is_active: boolean;
   metadata?: ISongMetadata;
   authors?: SongAuthorsModel[];
@@ -31,6 +32,7 @@ export class SongModel extends Model implements ISong {
   language?: string;
   duration_seconds!: number;
   url!: string;
+  image_url?: string;
   is_active!: boolean;
   metadata?: ISongMetadata;
   authors?: SongAuthorsModel[];

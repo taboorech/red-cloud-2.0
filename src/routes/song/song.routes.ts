@@ -13,8 +13,15 @@ const createSongRoutes = (ioc: Container) => {
 
   router.get("/:songId", ctrl.getSong);
   router.get("/", ctrl.getSongs);
-  router.post("/", upload.single("song"), ctrl.createSong);
-  router.put("/:songId", ctrl.updateSong);
+  router.post(
+    "/",
+    upload.fields([
+      { name: "song", maxCount: 1 },
+      { name: "image", maxCount: 1 },
+    ]),
+    ctrl.createSong,
+  );
+  router.put("/:songId", upload.single("image"), ctrl.updateSong);
   router.delete("/:songId", ctrl.deleteSong);
 
   return router;

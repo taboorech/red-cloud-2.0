@@ -48,9 +48,18 @@ export class SongController {
       authors: parsedAuthors,
     });
 
+    const files = req.files as {
+      song?: Express.Multer.File[];
+      image?: Express.Multer.File[];
+    };
+
+    const songFile = files.song?.[0];
+    const imageFile = files.image?.[0];
+
     const newSong = await this.songService.createSong(req.user!.id, {
       ...data,
-      file: req.file,
+      song: songFile,
+      image: imageFile,
     });
 
     res.status(201).json({
@@ -60,12 +69,18 @@ export class SongController {
   }
 
   public async updateSong(req: Request, res: Response) {
+    const { authors } = req.body;
+    const parsedAuthors = authors ? JSON.parse(authors) : undefined;
     const data = updateSongSchema.parse({
       ...req.params,
       ...req.body,
+      authors: parsedAuthors,
     });
 
-    const updatedSong = await this.songService.updateSong(req.user!.id, data);
+    const updatedSong = await this.songService.updateSong(req.user!.id, {
+      ...data,
+      image: req.file,
+    });
 
     res.json({
       status: "OK",
