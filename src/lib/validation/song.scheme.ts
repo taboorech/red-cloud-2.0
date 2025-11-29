@@ -1,5 +1,6 @@
 import * as zod from "zod";
-import { paginationValidation } from "./main.scheme";
+import { paginationValidation, userIdValidation } from "./main.scheme";
+import { SongAuthorsRole } from "../constants/song";
 
 const songIdSchema = zod.object({
   songId: zod.number().int().positive(),
@@ -12,6 +13,15 @@ const createSongSchema = zod.object({
   language: zod.string(),
   duration: zod.number().int().positive(),
   releaseYear: zod.number().int().positive().optional(),
+  authors: zod
+    .array(
+      zod
+        .object({
+          role: zod.enum(SongAuthorsRole),
+        })
+        .extend(userIdValidation.shape),
+    )
+    .optional(),
 });
 const updateSongSchema = songIdSchema.extend(createSongSchema.partial().shape);
 const deleteSongSchema = songIdSchema;

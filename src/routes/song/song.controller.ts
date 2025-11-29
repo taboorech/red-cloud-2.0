@@ -41,7 +41,12 @@ export class SongController {
   }
 
   public async createSong(req: Request, res: Response) {
-    const data = createSongSchema.parse(req.body);
+    const { authors } = req.body;
+    const parsedAuthors = authors ? JSON.parse(authors) : undefined;
+    const data = createSongSchema.parse({
+      ...req.body,
+      authors: parsedAuthors,
+    });
 
     const newSong = await this.songService.createSong({
       ...data,

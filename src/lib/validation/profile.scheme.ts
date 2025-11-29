@@ -5,6 +5,7 @@ import { passwordValidation } from "./auth.scheme";
 const getProfileValidation = zod
   .object({
     withSubscription: zod.boolean().optional().default(true),
+    withSongs: zod.boolean().optional().default(true),
   })
   .extend(userIdValidation.shape);
 

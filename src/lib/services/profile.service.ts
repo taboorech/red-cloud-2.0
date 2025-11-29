@@ -15,10 +15,15 @@ import { SubscriptionStatus } from "../constants/payment";
 export default class ProfileService {
   constructor() {}
 
-  public async getProfile(
-    userId: number,
-    withSubscription: boolean,
-  ): Promise<IUser> {
+  public async getProfile({
+    userId,
+    withSubscription = false,
+    withSongs = false,
+  }: {
+    userId: number;
+    withSubscription?: boolean;
+    withSongs?: boolean;
+  }): Promise<IUser> {
     const user = await UserModel.query()
       .findOne(`${UserModel.tableName}.id`, userId)
       .modify((builder) => {
@@ -28,6 +33,9 @@ export default class ProfileService {
             .modifyGraph("subscription", (subBuilder) => {
               subBuilder.where("status", SubscriptionStatus.ACTIVE);
             });
+        }
+        if (withSongs) {
+          builder.withGraphFetched("songs");
         }
       });
 

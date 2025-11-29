@@ -2,17 +2,19 @@ import z from "zod";
 import { SongModel } from "../db/models/song.model";
 import {
   createSongSchema,
-  getSongSchema,
   getSongsSchema,
   updateSongSchema,
 } from "../validation/song.scheme";
 import { AppError } from "../errors/app.error";
+import { SongAuthorsModel } from "../db/models/song-authors.model";
 
 export class SongService {
   constructor() {}
 
   public async getSong(id: number) {
-    const song = await SongModel.query().findById(id);
+    const song = await SongModel.query()
+      .findById(id)
+      .withGraphFetched("authors");
 
     return song;
   }
@@ -23,20 +25,22 @@ export class SongService {
     ids,
     search,
   }: z.infer<typeof getSongsSchema>) {
-    const songs = await SongModel.query().modify((builder) => {
-      if (ids) {
-        builder.whereIn("id", ids);
-      }
-      if (search) {
-        builder.whereILike("title", `%${search}%`);
-      }
-      if (limit) {
-        builder.limit(limit);
-      }
-      if (offset) {
-        builder.offset(offset);
-      }
-    });
+    const songs = await SongModel.query()
+      .modify((builder) => {
+        if (ids) {
+          builder.whereIn("id", ids);
+        }
+        if (search) {
+          builder.whereILike("title", `%${search}%`);
+        }
+        if (limit) {
+          builder.limit(limit);
+        }
+        if (offset) {
+          builder.offset(offset);
+        }
+      })
+      .withGraphFetched("authors");
 
     return songs;
   }
@@ -46,6 +50,7 @@ export class SongService {
     language,
     duration,
     releaseYear,
+    authors: requestedAuthors,
     file,
   }: z.infer<typeof createSongSchema> & { file?: Express.Multer.File }) {
     if (!file) {
@@ -60,7 +65,19 @@ export class SongService {
       metadata: releaseYear ? { release_year: releaseYear } : undefined,
     });
 
-    return newSong;
+    const authors = requestedAuthors?.length
+      ? await Promise.all(
+          requestedAuthors.map(async (author) => {
+            return await SongAuthorsModel.query().insert({
+              song_id: newSong.id,
+              user_id: author.userId,
+              role: author.role,
+            });
+          }),
+        )
+      : [];
+
+    return { ...newSong, authors };
   }
 
   public async updateSong({
@@ -68,6 +85,7 @@ export class SongService {
     title,
     language,
     duration,
+    authors: requestedAuthors,
   }: z.infer<typeof updateSongSchema>) {
     const song = await this.getSong(songId);
     if (!song) {
@@ -80,7 +98,49 @@ export class SongService {
       duration_seconds: duration,
     });
 
-    return updatedSong;
+    const existingAuthors = await SongAuthorsModel.query().where(
+      "song_id",
+      songId,
+    );
+
+    if (requestedAuthors) {
+      await Promise.all([
+        await SongAuthorsModel.query()
+          .where("song_id", songId)
+          .whereNotIn(
+            "user_id",
+            requestedAuthors.map((a) => a.userId),
+          )
+          .delete(),
+        await Promise.all(
+          requestedAuthors.map(async (author) => {
+            const existingAuthor = existingAuthors.find(
+              (a) => a.user_id === author.userId,
+            );
+            if (existingAuthor) {
+              if (existingAuthor.role !== author.role) {
+                await SongAuthorsModel.query()
+                  .findById(existingAuthor.id)
+                  .patch({ role: author.role });
+              }
+            } else {
+              await SongAuthorsModel.query().insert({
+                song_id: songId,
+                user_id: author.userId,
+                role: author.role,
+              });
+            }
+          }),
+        ),
+      ]);
+    }
+
+    const updatedAuthors = await SongAuthorsModel.query().where(
+      "song_id",
+      songId,
+    );
+
+    return { ...updatedSong, authors: updatedAuthors };
   }
 
   public async deleteSong(id: number) {
