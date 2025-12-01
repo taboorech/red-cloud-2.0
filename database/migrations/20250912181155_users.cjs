@@ -7,6 +7,7 @@ exports.up = async function(knex) {
     table.string("email").notNullable().unique();
     table.string("avatar").nullable();
     table.string("role").notNullable();
+    table.string('country').nullable();
 
     table.timestamps(true, true)
   });

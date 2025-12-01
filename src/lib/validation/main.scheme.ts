@@ -43,10 +43,19 @@ const browserHeaderValidation = zod.object({
     .min(1, `Browser header (${browserHeader}) is required`),
 });
 
+const usernameSchema = zod.object({
+  username: zod
+    .string()
+    .min(3, "3 symbols at least")
+    .max(32, "32 symbols maximum")
+    .regex(/^[\p{L}\p{N}_.-]+$/u, "Letters, numbers, _, ., -"),
+});
+
 export {
   idValidation,
   userIdValidation,
   paginationValidation,
   authorizationValidation,
   browserHeaderValidation,
+  usernameSchema,
 };

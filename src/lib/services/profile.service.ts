@@ -1,6 +1,9 @@
 import { injectable } from "inversify";
 import z from "zod";
-import { changeUserPasswordValidation } from "../validation/profile.scheme";
+import {
+  changeUserPasswordValidation,
+  updateProfileSchema,
+} from "../validation/profile.scheme";
 import { IUser, UserModel } from "../db/models/user.model";
 import { AppError } from "../errors/app.error";
 import { UserProviderCredentialsModel } from "../db/models/user-provider-credentials.model";
@@ -12,10 +15,15 @@ import { SubscriptionStatus } from "../constants/payment";
 export default class ProfileService {
   constructor() {}
 
-  public async getProfile(
-    userId: number,
-    withSubscription: boolean,
-  ): Promise<IUser> {
+  public async getProfile({
+    userId,
+    withSubscription = false,
+    withSongs = false,
+  }: {
+    userId: number;
+    withSubscription?: boolean;
+    withSongs?: boolean;
+  }): Promise<IUser> {
     const user = await UserModel.query()
       .findOne(`${UserModel.tableName}.id`, userId)
       .modify((builder) => {
@@ -26,6 +34,9 @@ export default class ProfileService {
               subBuilder.where("status", SubscriptionStatus.ACTIVE);
             });
         }
+        if (withSongs) {
+          builder.withGraphFetched("songs");
+        }
       });
 
     if (!user) {
@@ -33,6 +44,25 @@ export default class ProfileService {
     }
 
     return user;
+  }
+
+  public async updateProfile({
+    userId,
+    username,
+    country,
+  }: z.infer<typeof updateProfileSchema>): Promise<IUser> {
+    const user = await UserModel.query().findOne({ id: userId });
+
+    if (!user) {
+      throw new AppError(404, "User not found");
+    }
+
+    const updatedUser = await user.$query().patchAndFetch({
+      username,
+      country,
+    });
+
+    return updatedUser;
   }
 
   public async changeUserPassword({

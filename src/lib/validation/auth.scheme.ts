@@ -4,6 +4,7 @@ import {
   authorizationValidation,
   browserHeaderValidation,
   userIdValidation,
+  usernameSchema,
 } from "./main.scheme";
 
 const getAuthUrlValidation = zod
@@ -26,12 +27,9 @@ const passwordValidation = zod.object({
 const signUpValidation = zod
   .object({
     email: zod.email("Wrong email"),
-    username: zod
-      .string()
-      .min(3, "3 symbols at least")
-      .max(32, "32 symbols maximum")
-      .regex(/^[\p{L}\p{N}_.-]+$/u, "Letters, numbers, _, ., -"),
+    country: zod.string().optional(),
   })
+  .extend(usernameSchema.shape)
   .extend(browserHeaderValidation.shape)
   .extend(passwordValidation.shape);
 

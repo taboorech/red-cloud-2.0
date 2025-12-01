@@ -1,13 +1,16 @@
 export interface SongState {
   id: string;
-  title: string;
-  artist: string;
-  album: string;
+  currentTime: number;
   duration: number;
   isPlaying: boolean;
-  currentTime: number;
 
   roomOptions?: {
     roomId: number;
   };
+}
+
+export interface ISongListeningRecord {
+  songId: number;
+  listeningId: number;
+  userId: number;
 }

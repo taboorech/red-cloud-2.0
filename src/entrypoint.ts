@@ -8,9 +8,10 @@ import { ApplicationType } from "./lib/enum/application.enum";
 import { logger } from "./lib/logger";
 import { createSocketServer } from "./scoket/socket.server";
 import { initWorker } from "./worker/worker";
+import { Container } from "inversify";
 
-async function initSockets(server?: http.Server) {
-  const socketApp = await createSocketServer(server);
+async function initSockets(ioc: Container, server?: http.Server) {
+  const socketApp = await createSocketServer(server, ioc);
 
   if (!server) {
     socketApp.httpServer.listen(socketApp.port, () => {
@@ -29,7 +30,7 @@ async function boot() {
     const ioc = await constructIOC();
     switch (appType) {
       case ApplicationType.Socket:
-        await initSockets();
+        await initSockets(ioc);
         serverName = ApplicationType.Socket;
 
         break;

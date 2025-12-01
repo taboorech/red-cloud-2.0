@@ -46,6 +46,7 @@ export class GoogleClient implements IGoogleClient {
     name: string;
     avatar: string;
     externalId: string;
+    locale: string;
   }> {
     const client = this.createAuthClient();
     client.setCredentials(tokens);
@@ -61,6 +62,7 @@ export class GoogleClient implements IGoogleClient {
       name: profile.name!,
       avatar: profile.picture!,
       externalId: profile.id!,
+      locale: profile.locale!,
     };
   }
 

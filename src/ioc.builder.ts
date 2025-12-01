@@ -13,6 +13,8 @@ import GenreService from "./lib/services/genre.service";
 import PaymentController from "./routes/payment/payment.controller";
 import { PaymentService } from "./lib/services/payment.service";
 import { SubscriptionJobHandler } from "./worker/handlers/subscription";
+import { SongController } from "./routes/song/song.controller";
+import { SongService } from "./lib/services/song.service";
 
 export async function constructIOC(): Promise<Container> {
   const ioc = new Container();
@@ -28,6 +30,7 @@ export async function constructIOC(): Promise<Container> {
   ioc.bind(ProfileController).toSelf();
   ioc.bind(GenreController).toSelf();
   ioc.bind(PaymentController).toSelf();
+  ioc.bind(SongController).toSelf();
 
   // </editor-fold>
 
@@ -38,6 +41,7 @@ export async function constructIOC(): Promise<Container> {
   ioc.bind(UserHashCredentialsService).toSelf();
   ioc.bind(GenreService).toSelf();
   ioc.bind(PaymentService).toSelf();
+  ioc.bind(SongService).toSelf();
 
   // </editor-fold>
 
