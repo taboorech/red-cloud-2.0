@@ -6,9 +6,11 @@ import {
 } from "./handlers/song-state.socket.handlers";
 import { socketAuthMiddleware } from "@app/lib/utils/middlewares/auth.middleware";
 import { groupRoomSocketHandlers } from "./handlers/group-room.socket.handlers";
+import { Container } from "inversify";
 
 export async function createSocketServer(
   httpServer = http.createServer(),
+  ioc: Container,
 ): Promise<{
   port: number;
   httpServer: http.Server;
@@ -24,7 +26,7 @@ export async function createSocketServer(
   io.use(socketAuthMiddleware({ strict: true }));
 
   io.on("connection", async (socket) => {
-    await songStateSocketOnConnection(socket);
+    await songStateSocketOnConnection(socket, ioc);
     groupRoomSocketHandlers(socket);
 
     socket.on("disconnect", () => {

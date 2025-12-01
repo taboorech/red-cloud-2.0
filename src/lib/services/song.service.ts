@@ -10,6 +10,12 @@ import { SongAuthorsModel } from "../db/models/song-authors.model";
 import { SongGenresModel } from "../db/models/song-genres.model";
 import { FavoriteSongsModel } from "../db/models/favorite-songs.model";
 import { SongAction, SongActionsModel } from "../db/models/song-actions.model";
+import {
+  ISongListenings,
+  SongListeningsModel,
+} from "../db/models/song-listenings.model";
+import { RedisKeyGroup, RedisUtils } from "../utils/redis";
+import { ISongListeningRecord } from "../types/song";
 
 export class SongService {
   constructor() {}
@@ -424,5 +430,73 @@ export class SongService {
 
   public async dislikeSong(userId: number, songId: number) {
     return this.songAction(userId, songId, SongAction.DISLIKE);
+  }
+
+  public async recordListening({
+    userId,
+    songId,
+    durationListened,
+    totalDuration,
+  }: {
+    userId: number;
+    songId: number;
+    durationListened: number;
+    totalDuration: number;
+  }): Promise<ISongListenings | ISongListeningRecord | null> {
+    const redisKey = `user:${userId}:song:${songId}:listening_recorded`;
+    const completionPercentage = (durationListened / totalDuration) * 100;
+
+    if (completionPercentage < 65) {
+      return null;
+    }
+
+    const record = await RedisUtils.getRedisKey({
+      group: RedisKeyGroup.APP,
+      key: redisKey,
+    });
+
+    if (record) {
+      if (completionPercentage >= 100) {
+        await RedisUtils.removeRedisKey({
+          group: RedisKeyGroup.APP,
+          key: redisKey,
+        });
+      }
+
+      return JSON.parse(record) as ISongListeningRecord;
+    }
+
+    const allKeysPattern = `user:${userId}:song:*:listening_recorded`;
+
+    const existingKeys = await RedisUtils.getRedisKeys({
+      group: RedisKeyGroup.APP,
+      pattern: allKeysPattern,
+    });
+
+    if (existingKeys.length > 0) {
+      const keysToDelete = existingKeys.filter(
+        (key) => !key.includes(`:song:${songId}:`),
+      );
+      if (keysToDelete.length > 0) {
+        await RedisUtils.removeRedisKeys({
+          group: RedisKeyGroup.APP,
+          pattern: allKeysPattern,
+        });
+      }
+    }
+
+    const listening = await SongListeningsModel.query().insert({
+      user_id: userId,
+      song_id: songId,
+    });
+
+    await RedisUtils.setRedisKey({
+      group: RedisKeyGroup.APP,
+      key: redisKey,
+      value: JSON.stringify({ songId, listeningId: listening.id, userId }),
+      ttl: 7 * 24 * 60 * 60,
+    });
+
+    return listening;
   }
 }

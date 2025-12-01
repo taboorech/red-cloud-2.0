@@ -32,6 +32,16 @@ const getRedisKey = async ({
   return redis().get(`${group}:${key}`);
 };
 
+const getRedisKeys = async ({
+  group,
+  pattern,
+}: {
+  group: RedisKeyGroup;
+  pattern: string;
+}): Promise<string[]> => {
+  return redis().keys(`${group}:${pattern}`);
+};
+
 const removeRedisKey = async ({
   group,
   key,
@@ -42,8 +52,25 @@ const removeRedisKey = async ({
   await redis().del(`${group}:${key}`);
 };
 
+const removeRedisKeys = async ({
+  group,
+  pattern,
+}: {
+  group: RedisKeyGroup;
+  pattern: string;
+}) => {
+  const keys = await getRedisKeys({ group, pattern });
+  if (keys.length === 0) {
+    return;
+  }
+
+  await redis().del(keys);
+};
+
 export const RedisUtils = {
   setRedisKey,
   getRedisKey,
+  getRedisKeys,
   removeRedisKey,
+  removeRedisKeys,
 };

@@ -3,6 +3,8 @@ import { SongState } from "@app/lib/types/song";
 import { RedisKeyGroup, RedisUtils } from "@app/lib/utils/redis";
 import { validateSongState } from "@app/lib/utils/song";
 import { Socket } from "socket.io";
+import { SongService } from "@app/lib/services/song.service";
+import { Container } from "inversify";
 
 const SONG_STATE_TTL = 60 * 60 * 24 * 7; // 7 days in seconds
 
@@ -21,7 +23,10 @@ function parseSongState(stateString: string | null): SongState | null {
   }
 }
 
-export async function songStateSocketOnConnection(socket: Socket) {
+export async function songStateSocketOnConnection(
+  socket: Socket,
+  ioc: Container,
+) {
   const userId = socket.handshake.auth?.user?.id;
 
   if (!userId) {
@@ -50,6 +55,11 @@ export async function songStateSocketOnConnection(socket: Socket) {
   socket.on("song-state:update", async (data: SongState) => {
     try {
       await songUpdateHandler(socket, userId, data);
+      await handleListening(ioc, userId, {
+        songId: parseInt(data.id),
+        durationListened: data.currentTime,
+        totalDuration: data.duration,
+      });
     } catch (err) {
       logger().error("[SOCKET][SONG STATE][update] Error:", err);
       socket.emit("song-state:error", "Failed to update song state");
@@ -106,4 +116,39 @@ async function clearSongState(userId: number) {
     group: RedisKeyGroup.APP,
     key: generateCurrentSongStateRedisKey(userId),
   });
+}
+
+async function handleListening(
+  ioc: Container,
+  userId: number,
+  data: {
+    songId: number;
+    durationListened: number;
+    totalDuration: number;
+  },
+) {
+  if (
+    !data.songId ||
+    !data.durationListened ||
+    !data.totalDuration ||
+    data.durationListened < 0 ||
+    data.durationListened > data.totalDuration
+  ) {
+    logger().error("[SOCKET][SONG STATE] Invalid listening data:", data);
+    return;
+  }
+
+  const songService = ioc.get(SongService);
+  const listening = await songService.recordListening({
+    userId,
+    songId: data.songId,
+    durationListened: data.durationListened,
+    totalDuration: data.totalDuration,
+  });
+
+  if (listening) {
+    logger().info(
+      `[SOCKET][SONG STATE] User ${userId} listened to song ${data.songId} - ${Math.round((data.durationListened / data.totalDuration) * 100)}%`,
+    );
+  }
 }

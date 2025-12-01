@@ -8,3 +8,9 @@ export interface SongState {
     roomId: number;
   };
 }
+
+export interface ISongListeningRecord {
+  songId: number;
+  listeningId: number;
+  userId: number;
+}
