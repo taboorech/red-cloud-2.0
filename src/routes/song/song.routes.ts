@@ -11,6 +11,7 @@ const createSongRoutes = (ioc: Container) => {
 
   const upload = multer({ storage: multerStorage });
 
+  router.get("/favorites", ctrl.getFavoriteSongs);
   router.get("/:songId", ctrl.getSong);
   router.get("/", ctrl.getSongs);
   router.post(
@@ -21,6 +22,9 @@ const createSongRoutes = (ioc: Container) => {
     ]),
     ctrl.createSong,
   );
+  router.post("/:songId/favorite", ctrl.toggleFavoriteSong);
+  router.post("/:songId/like", ctrl.likeSong);
+  router.post("/:songId/dislike", ctrl.dislikeSong);
   router.put("/:songId", upload.single("image"), ctrl.updateSong);
   router.delete("/:songId", ctrl.deleteSong);
 

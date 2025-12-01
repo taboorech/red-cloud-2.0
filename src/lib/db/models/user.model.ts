@@ -6,6 +6,7 @@ import { UserBansModel } from "./user-bans.model";
 import { UserProviderCredentialsModel } from "./user-provider-credentials.model";
 import { UserRefreshTokenModel } from "./user-refresh-token.model";
 import { UserSubscriptionPlanModel } from "./user-subscription-plan.model";
+import { FavoriteSongsModel } from "./favorite-songs.model";
 
 export interface IUser {
   id: string;
@@ -16,6 +17,7 @@ export interface IUser {
   country?: string;
   subscription?: UserSubscriptionPlanModel;
   songs?: SongAuthorsModel[];
+  favoriteSongs?: FavoriteSongsModel[];
 }
 
 export class UserModel extends Model implements IUser {
@@ -29,6 +31,7 @@ export class UserModel extends Model implements IUser {
   country?: string;
   subscription?: UserSubscriptionPlanModel;
   songs?: SongAuthorsModel[];
+  favoriteSongs?: FavoriteSongsModel[];
 
   static relationMappings = {
     userProviderCredentials: {
@@ -75,8 +78,12 @@ export class UserModel extends Model implements IUser {
         to: `${SongModel.tableName}.id`,
       },
       modify: (qb: QueryBuilder<SongModel>) => {
-        // TODO: Select title, description, image, url only
-        qb.select(`${SongModel.tableName}.*`)
+        qb.select(
+          `${SongModel.tableName}.title`,
+          `${SongModel.tableName}.description`,
+          `${SongModel.tableName}.image_url`,
+          `${SongModel.tableName}.url`,
+        )
           .select(
             Model.raw(`
               ARRAY_AGG(DISTINCT ${SongAuthorsModel.tableName}.role) as roles
@@ -86,6 +93,14 @@ export class UserModel extends Model implements IUser {
             `${SongModel.tableName}.id`,
             `${SongAuthorsModel.tableName}.user_id`,
           );
+      },
+    },
+    favoriteSongs: {
+      relation: Model.HasManyRelation,
+      modelClass: FavoriteSongsModel,
+      join: {
+        from: `${this.tableName}.id`,
+        to: `${FavoriteSongsModel.tableName}.user_id`,
       },
     },
   };

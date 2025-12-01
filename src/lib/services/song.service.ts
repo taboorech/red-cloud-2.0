@@ -8,6 +8,8 @@ import {
 import { AppError } from "../errors/app.error";
 import { SongAuthorsModel } from "../db/models/song-authors.model";
 import { SongGenresModel } from "../db/models/song-genres.model";
+import { FavoriteSongsModel } from "../db/models/favorite-songs.model";
+import { SongAction, SongActionsModel } from "../db/models/song-actions.model";
 
 export class SongService {
   constructor() {}
@@ -104,6 +106,62 @@ export class SongService {
     return songs;
   }
 
+  public async getFavoriteSongs(
+    userId: number,
+    {
+      limit,
+      offset,
+      ids,
+      search,
+      genres,
+      withGenres,
+    }: z.infer<typeof getSongsSchema>,
+  ) {
+    const favoriteSongs = await SongModel.query()
+      .leftJoin(
+        `${FavoriteSongsModel.tableName}`,
+        `${FavoriteSongsModel.tableName}.song_id`,
+        `${SongModel.tableName}.id`,
+      )
+      .where(`${FavoriteSongsModel.tableName}.user_id`, userId)
+      .modify((builder) => {
+        if (ids) {
+          builder.whereIn(`${SongModel.tableName}.id`, ids);
+        }
+
+        if (search) {
+          builder.whereILike(`${SongModel.tableName}.title`, `%${search}%`);
+        }
+
+        if (limit) {
+          builder.limit(limit);
+        }
+
+        if (offset) {
+          builder.offset(offset);
+        }
+
+        if (genres) {
+          builder.whereExists(
+            SongGenresModel.query()
+              .select(1)
+              .whereColumn(
+                `${SongGenresModel.tableName}.song_id`,
+                `${SongModel.tableName}.id`,
+              )
+              .whereIn(`${SongGenresModel.tableName}.genre_id`, genres),
+          );
+        }
+
+        if (withGenres) {
+          builder.withGraphFetched("genres");
+        }
+      })
+      .withGraphFetched("authors");
+
+    return favoriteSongs;
+  }
+
   public async createSong(
     userId: number,
     {
@@ -171,6 +229,31 @@ export class SongService {
       : [];
 
     return { ...newSong, authors };
+  }
+
+  public async toggleFavoriteSong(userId: number, songId: number) {
+    const song = await this.getSong({ userId, songId });
+    if (!song) {
+      throw new AppError(404, "Song not found");
+    }
+
+    const favorite = await FavoriteSongsModel.query().findOne({
+      user_id: userId,
+      song_id: songId,
+    });
+
+    if (favorite) {
+      await favorite.$query().delete();
+
+      return false;
+    } else {
+      await FavoriteSongsModel.query().insert({
+        user_id: userId,
+        song_id: songId,
+      });
+
+      return true;
+    }
   }
 
   public async updateSong(
@@ -301,5 +384,45 @@ export class SongService {
     }
 
     await song.$query().delete();
+  }
+
+  private async songAction(userId: number, songId: number, action: SongAction) {
+    const song = await this.getSong({ userId, songId });
+    if (!song) {
+      throw new AppError(404, "Song not found");
+    }
+
+    const existingAction = await SongActionsModel.query().findOne({
+      user_id: userId,
+      song_id: songId,
+    });
+
+    if (existingAction) {
+      if (existingAction.action === action) {
+        await existingAction.$query().delete();
+
+        return null;
+      } else {
+        await existingAction.$query().patch({ action });
+
+        return existingAction;
+      }
+    } else {
+      const newAction = await SongActionsModel.query().insert({
+        user_id: userId,
+        song_id: songId,
+        action,
+      });
+
+      return newAction;
+    }
+  }
+
+  public async likeSong(userId: number, songId: number) {
+    return this.songAction(userId, songId, SongAction.LIKE);
+  }
+
+  public async dislikeSong(userId: number, songId: number) {
+    return this.songAction(userId, songId, SongAction.DISLIKE);
   }
 }

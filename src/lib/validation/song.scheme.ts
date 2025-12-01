@@ -37,13 +37,17 @@ const createSongSchema = zod.object({
     )
     .optional(),
 });
+const toggleFavoriteSongSchema = songIdSchema;
 const updateSongSchema = songIdSchema.extend(createSongSchema.partial().shape);
 const deleteSongSchema = songIdSchema;
+const songActionsSchema = songIdSchema;
 
 export {
   getSongSchema,
   getSongsSchema,
   createSongSchema,
+  toggleFavoriteSongSchema,
   updateSongSchema,
   deleteSongSchema,
+  songActionsSchema,
 };
