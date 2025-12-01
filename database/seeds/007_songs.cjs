@@ -7,7 +7,7 @@ const songs = [{
   language: 'English',
   duration_seconds: 210,
   url: 'http://example.com/song-a',
-  is_active: true,
+  is_public: true,
   metadata: { release_year: 2020 }
 }, {
   title: 'Song B',
@@ -16,7 +16,7 @@ const songs = [{
   language: 'English',
   duration_seconds: 180,
   url: 'http://example.com/song-b',
-  is_active: true,
+  is_public: true,
   metadata: { release_year: 2019 }
 }, {
   title: 'Song C',
@@ -25,7 +25,7 @@ const songs = [{
   language: null,
   duration_seconds: 240,
   url: 'http://example.com/song-c',
-  is_active: false,
+  is_public: false,
   metadata: { release_year: 2021 }
 }]
 

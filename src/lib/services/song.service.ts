@@ -33,7 +33,7 @@ export class SongService {
       .findById(songId)
       .where((builder) => {
         builder
-          .where(`${SongModel.tableName}.is_active`, true)
+          .where(`${SongModel.tableName}.is_public`, true)
           .orWhereExists(
             SongAuthorsModel.query()
               .select(1)
@@ -96,7 +96,7 @@ export class SongService {
       })
       .where((builder) => {
         builder
-          .where(`${SongModel.tableName}.is_active`, true)
+          .where(`${SongModel.tableName}.is_public`, true)
           .orWhereExists(
             SongAuthorsModel.query()
               .select(1)
@@ -177,7 +177,7 @@ export class SongService {
       language,
       duration,
       releaseYear,
-      isActive,
+      isPublic,
       authors: requestedAuthors,
       genres: requestedGenres,
       song,
@@ -207,7 +207,7 @@ export class SongService {
       duration_seconds: duration,
       url: song.path,
       image_url: image?.path,
-      is_active: isActive ?? true,
+      is_public: isPublic ?? true,
       metadata: releaseYear ? { release_year: releaseYear } : undefined,
     });
 
@@ -272,7 +272,7 @@ export class SongService {
       language,
       duration,
       releaseYear,
-      isActive,
+      isPublic,
       authors: requestedAuthors,
       genres: requestedGenres,
       image,
@@ -300,7 +300,7 @@ export class SongService {
       text,
       language,
       duration_seconds: duration,
-      is_active: isActive,
+      is_public: isPublic,
       image_url: image ? image.path : song.image_url,
       metadata: releaseYear
         ? { ...(song.metadata || {}), release_year: releaseYear }

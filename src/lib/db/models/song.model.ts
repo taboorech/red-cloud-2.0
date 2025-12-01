@@ -16,7 +16,7 @@ export interface ISong {
   duration_seconds: number;
   url: string;
   image_url?: string;
-  is_active: boolean;
+  is_public: boolean;
   metadata?: ISongMetadata;
   authors?: SongAuthorsModel[];
 
@@ -35,7 +35,7 @@ export class SongModel extends Model implements ISong {
   duration_seconds!: number;
   url!: string;
   image_url?: string;
-  is_active!: boolean;
+  is_public!: boolean;
   metadata?: ISongMetadata;
   authors?: SongAuthorsModel[];
 

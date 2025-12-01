@@ -10,7 +10,7 @@ exports.up = async function(knex) {
     table.integer('duration_seconds').notNullable();
     table.string('url').notNullable();
     table.string('image_url').nullable();
-    table.boolean('is_active').notNullable().defaultTo(true);
+    table.boolean('is_public').notNullable().defaultTo(true);
     table.jsonb('metadata').nullable();
 
     table.timestamps(true, true);

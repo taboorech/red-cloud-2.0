@@ -25,7 +25,7 @@ const createSongSchema = zod.object({
   language: zod.string(),
   duration: zod.number().int().positive(),
   releaseYear: zod.number().int().positive().optional(),
-  isActive: zod.boolean().optional(),
+  isPublic: zod.boolean().optional(),
   genres: genreSchema.optional(),
   authors: zod
     .array(
