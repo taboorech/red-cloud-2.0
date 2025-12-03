@@ -3,7 +3,7 @@ import { paginationValidation, userIdValidation } from "./main.scheme";
 import { SongAuthorsRole } from "../constants/song";
 
 const songIdSchema = zod.object({
-  songId: zod.number().int().positive(),
+  songId: zod.coerce.number().int().positive(),
 });
 
 const genreSchema = zod.array(zod.number().int().positive());
@@ -25,7 +25,7 @@ const createSongSchema = zod.object({
   language: zod.string(),
   duration: zod.number().int().positive(),
   releaseYear: zod.number().int().positive().optional(),
-  isActive: zod.boolean().optional(),
+  isPublic: zod.boolean().optional(),
   genres: genreSchema.optional(),
   authors: zod
     .array(
@@ -43,6 +43,7 @@ const deleteSongSchema = songIdSchema;
 const songActionsSchema = songIdSchema;
 
 export {
+  songIdSchema,
   getSongSchema,
   getSongsSchema,
   createSongSchema,
