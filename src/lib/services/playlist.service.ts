@@ -12,6 +12,7 @@ import {
 } from "../validation/playlist.scheme";
 import { AppError } from "../errors/app.error";
 import { PlaylistItemModel } from "../db/models/playlist-item.model";
+import { PlaylistMembersModel } from "../db/models/playlist-members.model";
 
 export class PlaylistService {
   constructor() {}
@@ -26,7 +27,18 @@ export class PlaylistService {
     const playlist = await PlaylistModel.query()
       .where("id", playlistId)
       .where((builder) => {
-        builder.where("is_public", true).orWhere("owner_id", userId);
+        builder
+          .where("is_public", true)
+          .orWhere("owner_id", userId)
+          .orWhereExists((subQuery) => {
+            subQuery
+              .select("*")
+              .from(PlaylistMembersModel.tableName)
+              .whereRaw(
+                `${PlaylistMembersModel.tableName}.playlist_id = playlists.id`,
+              )
+              .andWhere(`${PlaylistMembersModel.tableName}.user_id`, userId);
+          });
       })
       .modify((builder) => {
         if (withSongs) {
@@ -63,7 +75,18 @@ export class PlaylistService {
       }
 
       builder.where((subBuilder) => {
-        subBuilder.where("is_public", true).orWhere("owner_id", userId);
+        subBuilder
+          .where("is_public", true)
+          .orWhere("owner_id", userId)
+          .orWhereExists((subQuery) => {
+            subQuery
+              .select("*")
+              .from(PlaylistMembersModel.tableName)
+              .whereRaw(
+                `${PlaylistMembersModel.tableName}.playlist_id = playlists.id`,
+              )
+              .andWhere(`${PlaylistMembersModel.tableName}.user_id`, userId);
+          });
       });
 
       if (limit) {
@@ -231,5 +254,53 @@ export class PlaylistService {
     }
 
     await PlaylistModel.query().where("id", playlistId).delete();
+  }
+
+  public async addPlaylistMember({
+    userId,
+    playlistId,
+    memberId,
+  }: {
+    userId: number;
+    playlistId: number;
+    memberId: number;
+  }) {
+    const playlist = await PlaylistModel.query()
+      .where("id", playlistId)
+      .andWhere("owner_id", userId)
+      .first();
+
+    if (!playlist) {
+      throw new AppError(404, "Playlist not found");
+    }
+
+    await PlaylistMembersModel.query().insert({
+      playlist_id: playlistId,
+      user_id: memberId,
+    });
+  }
+
+  public async removePlaylistMember({
+    userId,
+    playlistId,
+    memberId,
+  }: {
+    userId: number;
+    playlistId: number;
+    memberId: number;
+  }) {
+    const playlist = await PlaylistModel.query()
+      .where("id", playlistId)
+      .andWhere("owner_id", userId)
+      .first();
+
+    if (!playlist) {
+      throw new AppError(404, "Playlist not found");
+    }
+
+    await PlaylistMembersModel.query()
+      .where("playlist_id", playlistId)
+      .andWhere("user_id", memberId)
+      .delete();
   }
 }
