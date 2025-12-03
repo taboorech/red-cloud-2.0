@@ -3,7 +3,7 @@ import { paginationValidation, userIdValidation } from "./main.scheme";
 import { SongAuthorsRole } from "../constants/song";
 
 const songIdSchema = zod.object({
-  songId: zod.number().int().positive(),
+  songId: zod.coerce.number().int().positive(),
 });
 
 const genreSchema = zod.array(zod.number().int().positive());
@@ -43,6 +43,7 @@ const deleteSongSchema = songIdSchema;
 const songActionsSchema = songIdSchema;
 
 export {
+  songIdSchema,
   getSongSchema,
   getSongsSchema,
   createSongSchema,
