@@ -7,6 +7,10 @@ import {
 import { socketAuthMiddleware } from "@app/lib/utils/middlewares/auth.middleware";
 import { groupRoomSocketHandlers } from "./handlers/group-room.socket.handlers";
 import { Container } from "inversify";
+import {
+  notificationSocketOnConnection,
+  notificationSocketOnDisconnect,
+} from "./handlers/notification.socket.handlers";
 
 export async function createSocketServer(
   httpServer = http.createServer(),
@@ -27,14 +31,14 @@ export async function createSocketServer(
 
   io.on("connection", async (socket) => {
     await songStateSocketOnConnection(socket, ioc);
+    await notificationSocketOnConnection(socket, io, ioc);
     groupRoomSocketHandlers(socket);
 
     socket.on("disconnect", () => {
       songStateSocketOnDisconnect(socket);
+      notificationSocketOnDisconnect(socket);
     });
   });
-
-  // TODO: User global error handling. Remove individual try-catch blocks where possible.
 
   return {
     port: process.env.SOCKET_PORT
