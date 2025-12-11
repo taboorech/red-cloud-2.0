@@ -40,8 +40,6 @@ export async function createSocketServer(
     });
   });
 
-  // TODO: User global error handling. Remove individual try-catch blocks where possible.
-
   return {
     port: process.env.SOCKET_PORT
       ? parseInt(process.env.SOCKET_PORT, 10)
