@@ -1,6 +1,11 @@
 import * as zod from "zod";
 import { paginationValidation, userIdValidation } from "./main.scheme";
 import { SongAuthorsRole } from "../constants/song";
+import { DeepLClient } from "../deepl/deepl.client";
+
+const supportedLanguageCodes = DeepLClient.SUPPORTED_LANGUAGES.map(
+  (lang) => lang.code,
+);
 
 const songIdSchema = zod.object({
   songId: zod.coerce.number().int().positive(),
@@ -22,7 +27,12 @@ const createSongSchema = zod.object({
   title: zod.string().min(1).max(255),
   description: zod.string().optional(),
   text: zod.string().optional(),
-  language: zod.string(),
+  language: zod
+    .string()
+    .refine((code) => supportedLanguageCodes.includes(code), {
+      message: `Language must be one of supported DeepL codes: ${supportedLanguageCodes.join(", ")}`,
+    })
+    .optional(),
   duration: zod.number().int().positive(),
   releaseYear: zod.number().int().positive().optional(),
   isPublic: zod.boolean().optional(),

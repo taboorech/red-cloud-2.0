@@ -19,6 +19,7 @@ import PaymentController from "./routes/payment/payment.controller";
 import { createSongRoutes } from "./routes/song/song.routes";
 import { createPlaylistRoutes } from "./routes/playlist/playlist.routes";
 import { createNotificationRoutes } from "./routes/notification/notification.routes";
+import { createLyricsRoutes } from "./routes/lyrics/lyrics.routes";
 
 function createAPIV1Routes(ioc: Container): Router {
   const router = Router();
@@ -35,6 +36,7 @@ function createAPIV1Routes(ioc: Container): Router {
   router.use("/songs", createSongRoutes(ioc));
   router.use("/playlists", createPlaylistRoutes(ioc));
   router.use("/notifications", createNotificationRoutes(ioc));
+  router.use("/lyrics", createLyricsRoutes(ioc));
 
   return router;
 }
