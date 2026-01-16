@@ -19,6 +19,8 @@ import PaymentController from "./routes/payment/payment.controller";
 import { createSongRoutes } from "./routes/song/song.routes";
 import { createPlaylistRoutes } from "./routes/playlist/playlist.routes";
 import { createNotificationRoutes } from "./routes/notification/notification.routes";
+import { createAIRoutes } from "./routes/ai/ai.routes";
+import { storageFolder } from "./lib/constants/app";
 
 function createAPIV1Routes(ioc: Container): Router {
   const router = Router();
@@ -35,6 +37,7 @@ function createAPIV1Routes(ioc: Container): Router {
   router.use("/songs", createSongRoutes(ioc));
   router.use("/playlists", createPlaylistRoutes(ioc));
   router.use("/notifications", createNotificationRoutes(ioc));
+  router.use("/ai", createAIRoutes(ioc));
 
   return router;
 }
@@ -57,7 +60,7 @@ async function createServer(ioc: Container) {
 
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json({ limit: "20mb" }));
-  app.use(express.static("storage"));
+  app.use(express.static(storageFolder));
 
   app.use("/api/v1", createAPIV1Routes(ioc));
 

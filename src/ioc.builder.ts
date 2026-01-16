@@ -19,6 +19,8 @@ import { PlaylistController } from "./routes/playlist/playlist.controller";
 import { PlaylistService } from "./lib/services/playlist.service";
 import { NotificationController } from "./routes/notification/notification.controller";
 import { NotificationService } from "./lib/services/notification.service";
+import { AIController } from "./routes/ai/ai.controller";
+import { AIService } from "./lib/services/ai.service";
 
 export async function constructIOC(): Promise<Container> {
   const ioc = new Container();
@@ -37,6 +39,7 @@ export async function constructIOC(): Promise<Container> {
   ioc.bind(SongController).toSelf();
   ioc.bind(PlaylistController).toSelf();
   ioc.bind(NotificationController).toSelf();
+  ioc.bind(AIController).toSelf();
 
   // </editor-fold>
 
@@ -50,6 +53,7 @@ export async function constructIOC(): Promise<Container> {
   ioc.bind(SongService).toSelf();
   ioc.bind(PlaylistService).toSelf();
   ioc.bind(NotificationService).toSelf();
+  ioc.bind(AIService).toSelf();
 
   // </editor-fold>
 
