@@ -29,7 +29,7 @@ export class LyricsController {
   public async translateSongLyrics(req: Request, res: Response): Promise<void> {
     const { songId, targetLanguage } = translateSongLyricsSchema.parse({
       ...req.params,
-      ...req.body,
+      ...req.query,
     });
     const userId = req.user!.id;
 
