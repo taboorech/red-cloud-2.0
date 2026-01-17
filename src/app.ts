@@ -21,6 +21,7 @@ import { createPlaylistRoutes } from "./routes/playlist/playlist.routes";
 import { createNotificationRoutes } from "./routes/notification/notification.routes";
 import { createAIRoutes } from "./routes/ai/ai.routes";
 import { storageFolder } from "./lib/constants/app";
+import { createLyricsRoutes } from "./routes/lyrics/lyrics.routes";
 
 function createAPIV1Routes(ioc: Container): Router {
   const router = Router();
@@ -38,6 +39,7 @@ function createAPIV1Routes(ioc: Container): Router {
   router.use("/playlists", createPlaylistRoutes(ioc));
   router.use("/notifications", createNotificationRoutes(ioc));
   router.use("/ai", createAIRoutes(ioc));
+  router.use("/lyrics", createLyricsRoutes(ioc));
 
   return router;
 }

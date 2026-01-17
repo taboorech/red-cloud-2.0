@@ -21,12 +21,16 @@ import { NotificationController } from "./routes/notification/notification.contr
 import { NotificationService } from "./lib/services/notification.service";
 import { AIController } from "./routes/ai/ai.controller";
 import { AIService } from "./lib/services/ai.service";
+import { LyricsService } from "./lib/services/lyrics.service";
+import { DeepLClient } from "./lib/deepl/deepl.client";
+import { LyricsController } from "./routes/lyrics/lyrics.controller";
 
 export async function constructIOC(): Promise<Container> {
   const ioc = new Container();
 
   // <editor-fold desc="System">
   ioc.bind(GoogleClient).toSelf();
+  ioc.bind(DeepLClient).toSelf();
   ioc.bind(SubscriptionJobHandler).toSelf().inSingletonScope();
   // </editor-fold>
 
@@ -40,6 +44,7 @@ export async function constructIOC(): Promise<Container> {
   ioc.bind(PlaylistController).toSelf();
   ioc.bind(NotificationController).toSelf();
   ioc.bind(AIController).toSelf();
+  ioc.bind(LyricsController).toSelf();
 
   // </editor-fold>
 
@@ -54,6 +59,7 @@ export async function constructIOC(): Promise<Container> {
   ioc.bind(PlaylistService).toSelf();
   ioc.bind(NotificationService).toSelf();
   ioc.bind(AIService).toSelf();
+  ioc.bind(LyricsService).toSelf();
 
   // </editor-fold>
 
