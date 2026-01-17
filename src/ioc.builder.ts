@@ -19,6 +19,8 @@ import { PlaylistController } from "./routes/playlist/playlist.controller";
 import { PlaylistService } from "./lib/services/playlist.service";
 import { NotificationController } from "./routes/notification/notification.controller";
 import { NotificationService } from "./lib/services/notification.service";
+import { AIController } from "./routes/ai/ai.controller";
+import { AIService } from "./lib/services/ai.service";
 import { LyricsService } from "./lib/services/lyrics.service";
 import { DeepLClient } from "./lib/deepl/deepl.client";
 import { LyricsController } from "./routes/lyrics/lyrics.controller";
@@ -41,6 +43,7 @@ export async function constructIOC(): Promise<Container> {
   ioc.bind(SongController).toSelf();
   ioc.bind(PlaylistController).toSelf();
   ioc.bind(NotificationController).toSelf();
+  ioc.bind(AIController).toSelf();
   ioc.bind(LyricsController).toSelf();
 
   // </editor-fold>
@@ -55,6 +58,7 @@ export async function constructIOC(): Promise<Container> {
   ioc.bind(SongService).toSelf();
   ioc.bind(PlaylistService).toSelf();
   ioc.bind(NotificationService).toSelf();
+  ioc.bind(AIService).toSelf();
   ioc.bind(LyricsService).toSelf();
 
   // </editor-fold>
