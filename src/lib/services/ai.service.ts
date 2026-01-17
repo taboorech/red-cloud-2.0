@@ -47,7 +47,7 @@ export class AIService {
 
       return {
         provider: AIProvider.OPENAI,
-        images: [imageData],
+        imageUrl: imageData.url,
         total: 1,
       };
     } catch (error) {
@@ -70,7 +70,7 @@ export class AIService {
         const filename = `${storageFolder}/${result.id}.png`;
         fs.writeFileSync(filename, buffer);
 
-        result.url = `/${storageFolder}/${result.id}.png`;
+        result.url = `${result.id}.png`;
         logger().info(`Saved base64 image: ${filename}`);
       } catch (error) {
         logger().error(`Failed to save base64 image ${result.id}:`, error);

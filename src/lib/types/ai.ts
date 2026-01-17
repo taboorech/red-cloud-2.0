@@ -9,7 +9,7 @@ export interface GeneratedImage {
 
 export interface AIGenerationResult {
   provider: AIProvider;
-  images: GeneratedImage[];
+  imageUrl?: string;
   total: number;
 }
 
