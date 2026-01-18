@@ -27,14 +27,15 @@ const createSongSchema = zod.object({
   title: zod.string().min(1).max(255),
   description: zod.string().optional(),
   text: zod.string().optional(),
+  imageUrl: zod.url().optional(),
   language: zod
     .string()
     .refine((code) => supportedLanguageCodes.includes(code), {
       message: `Language must be one of supported DeepL codes: ${supportedLanguageCodes.join(", ")}`,
     })
     .optional(),
-  duration: zod.number().int().positive(),
-  releaseYear: zod.number().int().positive().optional(),
+  duration: zod.coerce.number().int().positive(),
+  releaseYear: zod.coerce.number().int().positive().optional(),
   isPublic: zod.boolean().optional(),
   genres: genreSchema.optional(),
   authors: zod

@@ -78,11 +78,12 @@ export class SongController {
 
     const songFile = files.song?.[0];
     const imageFile = files.image?.[0];
+    const imageData = imageFile || data.imageUrl;
 
     const newSong = await this.songService.createSong(req.user!.id, {
       ...data,
       song: songFile,
-      image: imageFile,
+      image: imageData,
     });
 
     res.status(201).json({
@@ -118,9 +119,11 @@ export class SongController {
       genres: parsedGenres,
     });
 
+    const imageData = req.file || data.imageUrl;
+
     const updatedSong = await this.songService.updateSong(req.user!.id, {
       ...data,
-      image: req.file,
+      image: imageData,
     });
 
     res.json({
