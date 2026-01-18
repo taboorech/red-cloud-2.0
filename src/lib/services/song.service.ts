@@ -49,7 +49,10 @@ export class SongService {
           builder.withGraphFetched("genres");
         }
       })
-      .withGraphFetched("authors");
+      .withGraphFetched("authors")
+      .modifyGraph("authors", (builder) => {
+        builder.withGraphFetched("user");
+      });
 
     return song;
   }
@@ -184,7 +187,7 @@ export class SongService {
       image,
     }: z.infer<typeof createSongSchema> & {
       song?: Express.Multer.File;
-      image?: Express.Multer.File;
+      image?: Express.Multer.File | string;
     },
   ) {
     if (!song) {
@@ -206,7 +209,7 @@ export class SongService {
       language,
       duration_seconds: duration,
       url: song.path,
-      image_url: image?.path,
+      image_url: typeof image === "string" ? image : image?.path,
       is_public: isPublic ?? true,
       metadata: releaseYear ? { release_year: releaseYear } : undefined,
     });
@@ -276,7 +279,9 @@ export class SongService {
       authors: requestedAuthors,
       genres: requestedGenres,
       image,
-    }: z.infer<typeof updateSongSchema> & { image?: Express.Multer.File },
+    }: z.infer<typeof updateSongSchema> & {
+      image?: Express.Multer.File | string;
+    },
   ) {
     const song = await this.getSong({ userId, songId });
     if (!song) {
@@ -294,6 +299,11 @@ export class SongService {
       throw new AppError(403, "You must be an author of the song");
     }
 
+    let imageUrl = undefined;
+    if (image) {
+      imageUrl = typeof image === "string" ? image : image?.path;
+    }
+
     const updatedSong = await song.$query().patchAndFetch({
       title,
       description,
@@ -301,7 +311,7 @@ export class SongService {
       language,
       duration_seconds: duration,
       is_public: isPublic,
-      image_url: image ? image.path : song.image_url,
+      image_url: imageUrl,
       metadata: releaseYear
         ? { ...(song.metadata || {}), release_year: releaseYear }
         : song.metadata,

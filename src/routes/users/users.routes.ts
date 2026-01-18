@@ -9,8 +9,8 @@ const createUsersRoutes = (ioc: Container): Router => {
 
   const ctrl = ioc.get(UsersController);
 
-  router.get("/:userId", ctrl.getUser);
   router.get("/all", requireRole(UserRole.ADMIN), ctrl.getAllUsers);
+  router.get("/:userId", ctrl.getUser);
   router.put("/role", requireRole(UserRole.ADMIN), ctrl.updateUserRole);
   router.put(
     "/change-access",
