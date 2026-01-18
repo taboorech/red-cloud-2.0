@@ -60,6 +60,7 @@ export class PlaylistController {
     const playlist = await this.playlistService.createPlaylist({
       userId: req.user!.id,
       ...data,
+      image: req.file,
     });
 
     res.json({
@@ -74,6 +75,7 @@ export class PlaylistController {
     const playlist = await this.playlistService.updatePlaylist({
       userId: req.user!.id,
       ...data,
+      image: req.file,
     });
 
     res.json({
