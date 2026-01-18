@@ -13,6 +13,7 @@ import {
 import { AppError } from "../errors/app.error";
 import { PlaylistItemModel } from "../db/models/playlist-item.model";
 import { PlaylistMembersModel } from "../db/models/playlist-members.model";
+import { buildFileUrl } from "../utils/file-save";
 
 export class PlaylistService {
   constructor() {}
@@ -122,7 +123,7 @@ export class PlaylistService {
       title,
       is_public: isPublic ?? false,
       owner_id: userId,
-      image_url: image ? image.filename : null,
+      image_url: image ? buildFileUrl(image.filename) : null,
     });
 
     return newPlaylist;
@@ -152,7 +153,7 @@ export class PlaylistService {
       .update({
         title: title ?? playlist.title,
         is_public: isPublic ?? playlist.is_public,
-        image_url: image ? image.filename : playlist.image_url,
+        image_url: image ? buildFileUrl(image.filename) : playlist.image_url,
       })
       .returning("*")
       .first();
