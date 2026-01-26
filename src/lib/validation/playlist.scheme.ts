@@ -7,7 +7,7 @@ const playlistIdSchema = zod.object({
 });
 
 const playlistSameFieldsSchema = zod.object({
-  withSongs: zod.boolean().optional().default(false),
+  withSongs: zod.coerce.boolean().optional().default(false),
 });
 
 const getPlaylistByIdSchema = playlistIdSchema.extend(
@@ -16,7 +16,7 @@ const getPlaylistByIdSchema = playlistIdSchema.extend(
 
 const getPlaylistsSchema = zod
   .object({
-    withOwner: zod.boolean().optional().default(false),
+    withOwner: zod.coerce.boolean().optional().default(false),
   })
   .extend(paginationValidation.shape)
   .extend(playlistSameFieldsSchema.shape);

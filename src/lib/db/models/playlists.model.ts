@@ -23,6 +23,7 @@ export class PlaylistModel extends Model implements IPlaylist {
   is_public!: boolean;
   created_at!: Date;
   updated_at!: Date;
+  songs!: SongModel[];
 
   static relationMappings = {
     songs: {
