@@ -16,6 +16,7 @@ import {
 } from "../db/models/song-listenings.model";
 import { RedisKeyGroup, RedisUtils } from "../utils/redis";
 import { ISongListeningRecord } from "../types/song";
+import { buildFileUrl } from "../utils/file-save";
 
 export class SongService {
   constructor() {}
@@ -208,8 +209,8 @@ export class SongService {
       text,
       language,
       duration_seconds: duration,
-      url: song.path,
-      image_url: typeof image === "string" ? image : image?.path,
+      url: buildFileUrl(song.path),
+      image_url: buildFileUrl(typeof image === "string" ? image : image?.path),
       is_public: isPublic ?? true,
       metadata: releaseYear ? { release_year: releaseYear } : undefined,
     });
@@ -301,7 +302,7 @@ export class SongService {
 
     let imageUrl = undefined;
     if (image) {
-      imageUrl = typeof image === "string" ? image : image?.path;
+      imageUrl = buildFileUrl(typeof image === "string" ? image : image?.path);
     }
 
     const updatedSong = await song.$query().patchAndFetch({

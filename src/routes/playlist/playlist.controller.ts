@@ -27,7 +27,7 @@ export class PlaylistController {
   }
 
   public async getPlaylistById(req: Request, res: Response) {
-    const data = getPlaylistByIdSchema.parse(req.params);
+    const data = getPlaylistByIdSchema.parse({ ...req.query, ...req.params });
 
     const playlist = await this.playlistService.getPlaylistById({
       userId: req.user!.id,
@@ -60,6 +60,7 @@ export class PlaylistController {
     const playlist = await this.playlistService.createPlaylist({
       userId: req.user!.id,
       ...data,
+      image: req.file,
     });
 
     res.json({
@@ -74,6 +75,7 @@ export class PlaylistController {
     const playlist = await this.playlistService.updatePlaylist({
       userId: req.user!.id,
       ...data,
+      image: req.file,
     });
 
     res.json({

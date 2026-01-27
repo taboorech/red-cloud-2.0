@@ -5,6 +5,7 @@ import { logger } from "../logger";
 import fs from "fs";
 import { storageFolder } from "../constants/app";
 import { AppError } from "../errors/app.error";
+import { buildFileUrl } from "../utils/file-save";
 import {
   AIGenerationRequest,
   AIGenerationResult,
@@ -70,7 +71,7 @@ export class AIService {
         const filename = `${storageFolder}/${result.id}.png`;
         fs.writeFileSync(filename, buffer);
 
-        result.url = `${result.id}.png`;
+        result.url = buildFileUrl(`${result.id}.png`);
         logger().info(`Saved base64 image: ${filename}`);
       } catch (error) {
         logger().error(`Failed to save base64 image ${result.id}:`, error);

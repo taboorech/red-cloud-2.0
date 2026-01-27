@@ -6,6 +6,7 @@ import { UserModel } from "./user.model";
 export interface IPlaylist {
   id: number;
   title: string;
+  image_url: string | null;
   owner_id: number;
   is_public: boolean;
   created_at: Date;
@@ -17,10 +18,12 @@ export class PlaylistModel extends Model implements IPlaylist {
 
   id!: number;
   title!: string;
+  image_url!: string | null;
   owner_id!: number;
   is_public!: boolean;
   created_at!: Date;
   updated_at!: Date;
+  songs!: SongModel[];
 
   static relationMappings = {
     songs: {

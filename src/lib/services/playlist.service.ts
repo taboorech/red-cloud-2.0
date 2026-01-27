@@ -13,6 +13,7 @@ import {
 import { AppError } from "../errors/app.error";
 import { PlaylistItemModel } from "../db/models/playlist-item.model";
 import { PlaylistMembersModel } from "../db/models/playlist-members.model";
+import { buildFileUrl } from "../utils/file-save";
 
 export class PlaylistService {
   constructor() {}
@@ -113,13 +114,16 @@ export class PlaylistService {
     userId,
     title,
     isPublic,
+    image,
   }: {
     userId: number;
+    image?: Express.Multer.File;
   } & z.infer<typeof createPlaylistSchema>) {
     const newPlaylist = await PlaylistModel.query().insertAndFetch({
       title,
       is_public: isPublic ?? false,
       owner_id: userId,
+      image_url: image ? buildFileUrl(image.filename) : null,
     });
 
     return newPlaylist;
@@ -130,8 +134,10 @@ export class PlaylistService {
     playlistId,
     title,
     isPublic,
+    image,
   }: {
     userId: number;
+    image?: Express.Multer.File;
   } & z.infer<typeof updatePlaylistSchema>) {
     const playlist = await PlaylistModel.query()
       .where("id", playlistId)
@@ -147,6 +153,7 @@ export class PlaylistService {
       .update({
         title: title ?? playlist.title,
         is_public: isPublic ?? playlist.is_public,
+        image_url: image ? buildFileUrl(image.filename) : playlist.image_url,
       })
       .returning("*")
       .first();
