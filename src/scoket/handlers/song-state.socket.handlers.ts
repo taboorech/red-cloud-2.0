@@ -43,7 +43,16 @@ export async function songStateSocketOnConnection(
 
     const lastState = parseSongState(stateString);
 
-    socket.emit("song-state:connected", lastState);
+    const song = await ioc.get(SongService).getSong({
+      userId: userId,
+      songId: lastState ? parseInt(lastState.id) : 0,
+      withGenres: true,
+    });
+
+    socket.emit("song-state:connected", {
+      ...lastState,
+      song
+    });
     logger().info(
       `[SOCKET][SONG STATE] User ${userId} connected, state: ${lastState ? "found" : "empty"}`,
     );
@@ -129,7 +138,7 @@ async function handleListening(
 ) {
   if (
     !data.songId ||
-    !data.durationListened ||
+    // !data.durationListened ||
     !data.totalDuration ||
     data.durationListened < 0 ||
     data.durationListened > data.totalDuration
