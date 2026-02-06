@@ -1,8 +1,8 @@
 import { z as zod } from "zod";
 
 const paymentSchema = zod.object({
-  subscriptionPlanId: zod.number().int().positive(),
-  priceId: zod.number().int().positive(),
+  subscriptionPlanId: zod.coerce.number().int().positive(),
+  priceId: zod.coerce.number().int().positive(),
 });
 
 export const createCheckoutSessionSchema = paymentSchema;
