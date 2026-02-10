@@ -6,6 +6,11 @@ const types = [{
   description: 'User invited you to join a playlist',
   requires_action: true
 }, {
+  code: 'friend_request',
+  title: 'Friend Request',
+  description: 'User sent you a friend request',
+  requires_action: true
+}, {
   code: 'admin_announcement',
   title: 'Admin Announcement',
   description: 'Important announcement from administration',

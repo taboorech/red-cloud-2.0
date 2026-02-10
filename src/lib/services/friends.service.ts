@@ -1,4 +1,4 @@
-import { injectable } from "inversify";
+import { injectable, inject } from "inversify";
 import {
   acceptFriendRequestSchema,
   addFriendSchema,
@@ -7,10 +7,15 @@ import {
 } from "../validation/friends.scheme";
 import z from "zod";
 import { FriendModel, FriendStatus } from "../db/models/friends.model";
+import { NotificationService } from "./notification.service";
+import { UserModel } from "../db/models/user.model";
+import { NotificationTypeModel } from "../db/models/notification-types.model";
 
 @injectable()
 export class FriendsService {
-  constructor() {}
+  constructor(
+    @inject(NotificationService) private notificationService: NotificationService
+  ) {}
 
   public async getFriends({
     limit,
@@ -31,8 +36,8 @@ export class FriendsService {
         if (search) {
           builder.whereExists(
             FriendModel.relatedQuery("friend")
-              .where("name", "ilike", `%${search}%`)
-              .orWhere("email", "ilike", `%${search}%`),
+              .whereILike("name", `%${search}%`)
+              .orWhereILike("email", `%${search}%`),
           );
         }
 
@@ -58,6 +63,26 @@ export class FriendsService {
       friend_id: friendId,
       status: FriendStatus.pending,
     });
+
+    const notificationType = await NotificationTypeModel.query()
+      .where('code', 'friend_request')
+      .first();
+
+    const sender = await UserModel.query()
+      .where('id', userId)
+      .first();
+
+    if (notificationType && sender) {
+      await this.notificationService.createNotification({
+        typeId: notificationType.id,
+        recipientId: friendId,
+        senderId: userId,
+        relatedEntityType: 'friend_request',
+        relatedEntityId: null,
+        title: 'New Friend Request',
+        message: `${sender.username} sent you a friend request`,
+      });
+    }
   }
 
   public async acceptFriendRequest({
