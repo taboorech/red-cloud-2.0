@@ -64,12 +64,29 @@ export class FriendsService {
     requestId,
     userId,
   }: z.infer<typeof acceptFriendRequestSchema>) {
-    await FriendModel.query()
-      .where("id", requestId)
-      .andWhere("friend_id", userId)
-      .update({
+    await FriendModel.transaction(async (trx) => {
+      const request = await FriendModel.query(trx)
+        .where("id", requestId)
+        .andWhere("friend_id", userId)
+        .first();
+
+      if (!request) {
+        throw new Error("Friend request not found");
+      }
+
+      await FriendModel.query(trx).insert({
+        user_id: request.friend_id,
+        friend_id: request.user_id,
         status: FriendStatus.accepted,
       });
+
+      await FriendModel.query(trx)
+        .where("id", requestId)
+        .andWhere("friend_id", userId)
+        .update({
+          status: FriendStatus.accepted,
+        });
+    })
   }
 
   public async removeFriend({

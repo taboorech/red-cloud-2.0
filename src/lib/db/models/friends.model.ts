@@ -12,6 +12,9 @@ export interface IFriend {
   user_id: number;
   friend_id: number;
   status: FriendStatus;
+  friend?: UserModel;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export class FriendModel extends Model implements IFriend {
@@ -21,6 +24,9 @@ export class FriendModel extends Model implements IFriend {
   user_id!: number;
   friend_id!: number;
   status!: FriendStatus;
+  friend?: UserModel;
+  created_at?: string;
+  updated_at?: string;
 
   static relationMappings = {
     friend: {
