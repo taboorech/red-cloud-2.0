@@ -14,7 +14,8 @@ import { NotificationTypeModel } from "../db/models/notification-types.model";
 @injectable()
 export class FriendsService {
   constructor(
-    @inject(NotificationService) private notificationService: NotificationService
+    @inject(NotificationService)
+    private notificationService: NotificationService,
   ) {}
 
   public async getFriends({
@@ -65,21 +66,19 @@ export class FriendsService {
     });
 
     const notificationType = await NotificationTypeModel.query()
-      .where('code', 'friend_request')
+      .where("code", "friend_request")
       .first();
 
-    const sender = await UserModel.query()
-      .where('id', userId)
-      .first();
+    const sender = await UserModel.query().where("id", userId).first();
 
     if (notificationType && sender) {
       await this.notificationService.createNotification({
         typeId: notificationType.id,
         recipientId: friendId,
         senderId: userId,
-        relatedEntityType: 'friend_request',
+        relatedEntityType: "friend_request",
         relatedEntityId: null,
-        title: 'New Friend Request',
+        title: "New Friend Request",
         message: `${sender.username} sent you a friend request`,
       });
     }
@@ -111,7 +110,7 @@ export class FriendsService {
         .update({
           status: FriendStatus.accepted,
         });
-    })
+    });
   }
 
   public async removeFriend({

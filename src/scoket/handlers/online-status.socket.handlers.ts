@@ -17,9 +17,9 @@ export async function onlineStatusSocketOnConnection(
   try {
     const onlineService = ioc.get(OnlineService);
     await onlineService.setUserOnline(userId);
-    
+
     logger().info(`[SOCKET][ONLINE STATUS] User ${userId} is now online`);
-    
+
     // Set up heartbeat interval
     const heartbeatInterval = setInterval(async () => {
       try {
@@ -31,7 +31,6 @@ export async function onlineStatusSocketOnConnection(
 
     // Store interval reference on socket for cleanup
     (socket as any).heartbeatInterval = heartbeatInterval;
-
   } catch (err) {
     logger().error("[SOCKET][ONLINE STATUS] Connection error:", err);
   }
@@ -50,7 +49,7 @@ export async function onlineStatusSocketOnDisconnect(
   try {
     const onlineService = ioc.get(OnlineService);
     await onlineService.setUserOffline(userId);
-    
+
     // Clear heartbeat interval
     const heartbeatInterval = (socket as any).heartbeatInterval;
     if (heartbeatInterval) {

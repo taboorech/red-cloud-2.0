@@ -21,54 +21,56 @@ export async function friendsOnlineSocketOnConnection(
 
     // Get user's friends list
     const userFriends = await FriendModel.query()
-      .where('user_id', userId)
-      .where('status', FriendStatus.accepted);
+      .where("user_id", userId)
+      .where("status", FriendStatus.accepted);
 
     // Notify all friends that this user is online
     for (const friend of userFriends) {
-      io.to(`user:${friend.friend_id}`).emit('friend-online', {
+      io.to(`user:${friend.friend_id}`).emit("friend-online", {
         userId: userId,
-        status: 'online',
-        timestamp: new Date().toISOString()
+        status: "online",
+        timestamp: new Date().toISOString(),
       });
     }
 
-    logger().info(`[SOCKET][FRIENDS ONLINE] User ${userId} connected, notified ${userFriends.length} friends`);
-
+    logger().info(
+      `[SOCKET][FRIENDS ONLINE] User ${userId} connected, notified ${userFriends.length} friends`,
+    );
   } catch (err) {
     logger().error("[SOCKET][FRIENDS ONLINE] Connection error:", err);
   }
 
   // Handle request for friends online status
-  socket.on('get-friends-online', async () => {
+  socket.on("get-friends-online", async () => {
     try {
       const userFriends = await FriendModel.query()
-        .where('user_id', userId)
-        .where('status', FriendStatus.accepted)
-        .withGraphFetched('friend');
+        .where("user_id", userId)
+        .where("status", FriendStatus.accepted)
+        .withGraphFetched("friend");
 
       const onlineFriends = [];
 
       for (const friend of userFriends) {
-        const friendRoom = io.sockets.adapter.rooms.get(`user:${friend.friend_id}`);
+        const friendRoom = io.sockets.adapter.rooms.get(
+          `user:${friend.friend_id}`,
+        );
         const isOnline = friendRoom && friendRoom.size > 0;
-        
+
         if (isOnline) {
           onlineFriends.push({
             id: friend.friend_id,
             username: friend.friend?.username,
             avatar: friend.friend?.avatar,
             isOnline: true,
-            lastSeen: new Date().toISOString()
+            lastSeen: new Date().toISOString(),
           });
         }
       }
 
-      socket.emit('friends-online-list', {
+      socket.emit("friends-online-list", {
         friends: onlineFriends,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (err) {
       logger().error("[SOCKET][FRIENDS ONLINE] Get online friends error:", err);
     }
@@ -89,20 +91,21 @@ export async function friendsOnlineSocketOnDisconnect(
   try {
     // Get user's friends list
     const userFriends = await FriendModel.query()
-      .where('user_id', userId)
-      .where('status', FriendStatus.accepted);
+      .where("user_id", userId)
+      .where("status", FriendStatus.accepted);
 
     // Notify all friends that this user is offline
     for (const friend of userFriends) {
-      io.to(`user:${friend.friend_id}`).emit('friend-offline', {
+      io.to(`user:${friend.friend_id}`).emit("friend-offline", {
         userId: userId,
-        status: 'offline',
-        timestamp: new Date().toISOString()
+        status: "offline",
+        timestamp: new Date().toISOString(),
       });
     }
 
-    logger().info(`[SOCKET][FRIENDS ONLINE] User ${userId} disconnected, notified ${userFriends.length} friends`);
-
+    logger().info(
+      `[SOCKET][FRIENDS ONLINE] User ${userId} disconnected, notified ${userFriends.length} friends`,
+    );
   } catch (err) {
     logger().error("[SOCKET][FRIENDS ONLINE] Disconnect error:", err);
   }

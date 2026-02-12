@@ -23,6 +23,7 @@ import { createAIRoutes } from "./routes/ai/ai.routes";
 import { storageFolder } from "./lib/constants/app";
 import { createLyricsRoutes } from "./routes/lyrics/lyrics.routes";
 import { createFriendsRoutes } from "./routes/friends/friends.routes";
+import { createSearchRoutes } from "./routes/search/search.routes";
 
 function createAPIV1Routes(ioc: Container): Router {
   const router = Router();
@@ -30,6 +31,7 @@ function createAPIV1Routes(ioc: Container): Router {
   router.use("/auth", createAuthRoutes(ioc));
   router.use("/genres", createPublicGenreRoutes(ioc));
   router.use("/payment", createPublicPaymentRoutes(ioc));
+  router.use("/search", createSearchRoutes(ioc));
 
   (router.use(authMiddleware({ strict: true })), router.use(banMiddleware));
   router.use("/payment", createProtectedPaymentRoutes(ioc));

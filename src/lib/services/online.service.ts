@@ -12,7 +12,11 @@ export class OnlineService {
   public async setUserOnline(userId: string): Promise<void> {
     const redisClient = redis();
     await redisClient.sadd(this.ONLINE_USERS_KEY, userId);
-    await redisClient.setex(`${this.USER_HEARTBEAT_KEY}:${userId}`, this.HEARTBEAT_EXPIRY, Date.now().toString());
+    await redisClient.setex(
+      `${this.USER_HEARTBEAT_KEY}:${userId}`,
+      this.HEARTBEAT_EXPIRY,
+      Date.now().toString(),
+    );
   }
 
   public async setUserOffline(userId: string): Promise<void> {
@@ -23,7 +27,9 @@ export class OnlineService {
 
   public async isUserOnline(userId: string): Promise<boolean> {
     const redisClient = redis();
-    const exists = await redisClient.exists(`${this.USER_HEARTBEAT_KEY}:${userId}`);
+    const exists = await redisClient.exists(
+      `${this.USER_HEARTBEAT_KEY}:${userId}`,
+    );
     return exists === 1;
   }
 
@@ -32,11 +38,13 @@ export class OnlineService {
     return await redisClient.smembers(this.ONLINE_USERS_KEY);
   }
 
-  public async getOnlineStatus(userIds: string[]): Promise<Record<string, boolean>> {
+  public async getOnlineStatus(
+    userIds: string[],
+  ): Promise<Record<string, boolean>> {
     const redisClient = redis();
     const pipeline = redisClient.pipeline();
-    
-    userIds.forEach(userId => {
+
+    userIds.forEach((userId) => {
       pipeline.exists(`${this.USER_HEARTBEAT_KEY}:${userId}`);
     });
 
@@ -52,15 +60,21 @@ export class OnlineService {
 
   public async updateHeartbeat(userId: string): Promise<void> {
     const redisClient = redis();
-    await redisClient.setex(`${this.USER_HEARTBEAT_KEY}:${userId}`, this.HEARTBEAT_EXPIRY, Date.now().toString());
+    await redisClient.setex(
+      `${this.USER_HEARTBEAT_KEY}:${userId}`,
+      this.HEARTBEAT_EXPIRY,
+      Date.now().toString(),
+    );
   }
 
   public async cleanupOfflineUsers(): Promise<void> {
     const redisClient = redis();
     const onlineUsers = await redisClient.smembers(this.ONLINE_USERS_KEY);
-    
+
     for (const userId of onlineUsers) {
-      const exists = await redisClient.exists(`${this.USER_HEARTBEAT_KEY}:${userId}`);
+      const exists = await redisClient.exists(
+        `${this.USER_HEARTBEAT_KEY}:${userId}`,
+      );
       if (exists === 0) {
         await redisClient.srem(this.ONLINE_USERS_KEY, userId);
       }
