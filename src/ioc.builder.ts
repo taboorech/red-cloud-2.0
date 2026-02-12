@@ -24,6 +24,9 @@ import { AIService } from "./lib/services/ai.service";
 import { LyricsService } from "./lib/services/lyrics.service";
 import { DeepLClient } from "./lib/deepl/deepl.client";
 import { LyricsController } from "./routes/lyrics/lyrics.controller";
+import { FriendsController } from "./routes/friends/friends.controller";
+import { FriendsService } from "./lib/services/friends.service";
+import { OnlineService } from "./lib/services/online.service";
 
 export async function constructIOC(): Promise<Container> {
   const ioc = new Container();
@@ -45,6 +48,7 @@ export async function constructIOC(): Promise<Container> {
   ioc.bind(NotificationController).toSelf();
   ioc.bind(AIController).toSelf();
   ioc.bind(LyricsController).toSelf();
+  ioc.bind(FriendsController).toSelf();
 
   // </editor-fold>
 
@@ -60,6 +64,8 @@ export async function constructIOC(): Promise<Container> {
   ioc.bind(NotificationService).toSelf();
   ioc.bind(AIService).toSelf();
   ioc.bind(LyricsService).toSelf();
+  ioc.bind(FriendsService).toSelf();
+  ioc.bind(OnlineService).toSelf();
 
   // </editor-fold>
 

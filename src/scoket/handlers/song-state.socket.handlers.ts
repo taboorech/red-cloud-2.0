@@ -51,7 +51,7 @@ export async function songStateSocketOnConnection(
 
     socket.emit("song-state:connected", {
       ...lastState,
-      song
+      song,
     });
     logger().info(
       `[SOCKET][SONG STATE] User ${userId} connected, state: ${lastState ? "found" : "empty"}`,

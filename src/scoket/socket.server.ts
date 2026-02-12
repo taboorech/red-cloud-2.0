@@ -11,6 +11,14 @@ import {
   notificationSocketOnConnection,
   notificationSocketOnDisconnect,
 } from "./handlers/notification.socket.handlers";
+import {
+  onlineStatusSocketOnConnection,
+  onlineStatusSocketOnDisconnect,
+} from "./handlers/online-status.socket.handlers";
+import {
+  friendsOnlineSocketOnConnection,
+  friendsOnlineSocketOnDisconnect,
+} from "./handlers/friends-online.socket.handlers";
 
 export async function createSocketServer(
   httpServer = http.createServer(),
@@ -32,11 +40,15 @@ export async function createSocketServer(
   io.on("connection", async (socket) => {
     await songStateSocketOnConnection(socket, ioc);
     await notificationSocketOnConnection(socket, io, ioc);
+    await onlineStatusSocketOnConnection(socket, ioc);
+    await friendsOnlineSocketOnConnection(socket, io, ioc);
     groupRoomSocketHandlers(socket);
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", async () => {
       songStateSocketOnDisconnect(socket);
       notificationSocketOnDisconnect(socket);
+      await onlineStatusSocketOnDisconnect(socket, ioc);
+      await friendsOnlineSocketOnDisconnect(socket, io, ioc);
     });
   });
 
