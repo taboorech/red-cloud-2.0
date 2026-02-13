@@ -64,7 +64,7 @@ export class PlaylistService {
     withSongs,
     withOwner,
   }: {
-    userId: number;
+    userId?: number;
   } & z.infer<typeof getPlaylistsSchema>): Promise<IPlaylist[]> {
     const playlists = await PlaylistModel.query().modify((builder) => {
       if (ids && ids.length > 0) {
@@ -76,6 +76,11 @@ export class PlaylistService {
       }
 
       builder.where((subBuilder) => {
+        if (!userId) {
+          subBuilder.where("is_public", true);
+          return;
+        }
+
         subBuilder
           .where("is_public", true)
           .orWhere("owner_id", userId)
