@@ -12,6 +12,7 @@ const createAuthRoutes = (ioc: Container): Router => {
   const ctrl = ioc.get(AuthController);
 
   router.post("/reset-password", ctrl.resetPassword);
+  router.post("/reset-password/confirm", ctrl.confirmResetPassword);
   router.get("/connection-link", ctrl.getAuthUrl);
   router.get("/callback", ctrl.exchangeAuthCode);
   router.post("/signup", ctrl.signUp);

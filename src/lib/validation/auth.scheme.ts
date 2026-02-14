@@ -55,6 +55,12 @@ const resetPasswordValidation = zod.object({
   email: zod.email("Wrong email"),
 });
 
+const confirmResetPasswordValidation = zod
+  .object({
+    token: zod.string().min(1, "Token is required"),
+  })
+  .extend(passwordValidation.shape);
+
 export {
   getAuthUrlValidation,
   exchangeCodeValidation,
@@ -64,4 +70,5 @@ export {
   logoutValidation,
   passwordValidation,
   resetPasswordValidation,
+  confirmResetPasswordValidation,
 };

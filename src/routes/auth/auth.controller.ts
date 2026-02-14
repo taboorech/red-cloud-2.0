@@ -1,6 +1,7 @@
 import { browserHeader } from "@app/lib/constants/app";
 import { AuthService } from "@app/lib/services/auth.service";
 import {
+  confirmResetPasswordValidation,
   exchangeCodeValidation,
   getAuthUrlValidation,
   loginValidation,
@@ -24,6 +25,7 @@ export default class AuthController {
     this.logout = this.logout.bind(this);
     this.refreshExternalTokens = this.refreshExternalTokens.bind(this);
     this.resetPassword = this.resetPassword.bind(this);
+    this.confirmResetPassword = this.confirmResetPassword.bind(this);
   }
 
   public async getAuthUrl(req: Request, res: Response) {
@@ -126,6 +128,22 @@ export default class AuthController {
     const { email } = resetPasswordValidation.parse(req.body);
 
     await this.authService.resetPassword({ email });
+
+    res.json({
+      status: "OK",
+    });
+  }
+
+  public async confirmResetPassword(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    const { token, password } = confirmResetPasswordValidation.parse(req.body);
+
+    await this.authService.confirmResetPassword({
+      token,
+      newPassword: password,
+    });
 
     res.json({
       status: "OK",
