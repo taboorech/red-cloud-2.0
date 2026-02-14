@@ -51,6 +51,10 @@ const logoutValidation = zod
   .extend(userIdValidation.shape)
   .extend(browserHeaderValidation.shape);
 
+const resetPasswordValidation = zod.object({
+  email: zod.email("Wrong email"),
+});
+
 export {
   getAuthUrlValidation,
   exchangeCodeValidation,
@@ -59,4 +63,5 @@ export {
   refreshTokensValidation,
   logoutValidation,
   passwordValidation,
+  resetPasswordValidation,
 };

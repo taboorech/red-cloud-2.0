@@ -11,6 +11,7 @@ import { UserProviderCredentialsModel } from "../db/models/user-provider-credent
 import { UserRefreshTokenModel } from "../db/models/user-refresh-token.model";
 import { UserRole } from "../enum/user.enum";
 import { UserHashCredentialsService } from "./user-hash-credentials.sevice";
+import { mailerTransporter } from "../constants/smtp";
 
 @injectable()
 export class AuthService {
@@ -323,5 +324,31 @@ export class AuthService {
         browser,
       })
       .delete();
+  }
+
+  public async resetPassword({ email }: { email: string }): Promise<void> {
+    const user = await UserModel.query().findOne({
+      email,
+    });
+
+    if (!user) {
+      throw new AppError(404, "User not found");
+    }
+
+    const credentials = await UserProviderCredentialsModel.query().findOne({
+      user_id: user.id,
+      provider: Provider.LOCAL,
+    });
+
+    if (!credentials) {
+      throw new AppError(404, "No credentials found");
+    }
+
+    await mailerTransporter().sendMail({
+      from: process.env.SMTP_FROM,
+      to: email,
+      subject: "Password reset",
+      text: "To reset your password, please click the following link: <reset_link>",
+    });
   }
 }
