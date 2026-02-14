@@ -10,6 +10,7 @@ import { UserProviderCredentialsModel } from "../db/models/user-provider-credent
 import { Provider } from "../enum/provider.enum";
 import * as bcrypt from "bcrypt";
 import { SubscriptionStatus } from "../constants/payment";
+import { UserRefreshTokenModel } from "../db/models/user-refresh-token.model";
 
 @injectable()
 export default class ProfileService {
@@ -113,5 +114,7 @@ export default class ProfileService {
         },
       })
       .where({ id: credentials.id });
+
+    await UserRefreshTokenModel.query().delete().where({ user_id: user.id });
   }
 }
