@@ -1,6 +1,7 @@
 import { browserHeader } from "@app/lib/constants/app";
 import { AuthService } from "@app/lib/services/auth.service";
 import {
+  changePasswordValidation,
   confirmResetPasswordValidation,
   exchangeCodeValidation,
   getAuthUrlValidation,
@@ -26,6 +27,7 @@ export default class AuthController {
     this.refreshExternalTokens = this.refreshExternalTokens.bind(this);
     this.resetPassword = this.resetPassword.bind(this);
     this.confirmResetPassword = this.confirmResetPassword.bind(this);
+    this.changePassword = this.changePassword.bind(this);
   }
 
   public async getAuthUrl(req: Request, res: Response) {
@@ -143,6 +145,24 @@ export default class AuthController {
     await this.authService.confirmResetPassword({
       token,
       newPassword: password,
+    });
+
+    res.json({
+      status: "OK",
+    });
+  }
+
+  public async changePassword(req: Request, res: Response): Promise<void> {
+    const { userId, currentPassword, newPassword } =
+      changePasswordValidation.parse({
+        ...req.body,
+        userId: req.user?.id,
+      });
+
+    await this.authService.changePassword({
+      userId,
+      currentPassword,
+      newPassword,
     });
 
     res.json({

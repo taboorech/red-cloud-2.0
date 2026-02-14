@@ -403,4 +403,53 @@ export class AuthService {
       credentials: { password: hashPassword },
     });
   }
+
+  public async changePassword({
+    userId,
+    currentPassword,
+    newPassword,
+  }: {
+    userId: number;
+    currentPassword: string;
+    newPassword: string;
+  }): Promise<void> {
+    const user = await UserModel.query().findById(userId);
+
+    if (!user) {
+      throw new AppError(404, "User not found");
+    }
+
+    const credentials = await UserProviderCredentialsModel.query().findOne({
+      user_id: user.id,
+      provider: Provider.LOCAL,
+    });
+
+    if (!credentials || !credentials.credentials.password) {
+      throw new AppError(404, "No credentials found");
+    }
+
+    const isMatch = await bcrypt.compare(
+      currentPassword,
+      credentials.credentials.password,
+    );
+
+    if (!isMatch) {
+      throw new AppError(403, "Wrong current password");
+    }
+
+    const hashPassword = await bcrypt.hash(
+      newPassword,
+      parseInt(process.env.BCRYPT_SALT_ROUNDS || "10"),
+    );
+
+    await credentials.$query().patch({
+      credentials: { password: hashPassword },
+    });
+
+    await UserRefreshTokenModel.query()
+      .where({
+        user_id: user.id,
+      })
+      .delete();
+  }
 }

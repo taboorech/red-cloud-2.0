@@ -61,6 +61,13 @@ const confirmResetPasswordValidation = zod
   })
   .extend(passwordValidation.shape);
 
+const changePasswordValidation = zod
+  .object({
+    currentPassword: passwordValidation.shape.password,
+    newPassword: passwordValidation.shape.password,
+  })
+  .extend(userIdValidation.shape);
+
 export {
   getAuthUrlValidation,
   exchangeCodeValidation,
@@ -71,4 +78,5 @@ export {
   passwordValidation,
   resetPasswordValidation,
   confirmResetPasswordValidation,
+  changePasswordValidation,
 };

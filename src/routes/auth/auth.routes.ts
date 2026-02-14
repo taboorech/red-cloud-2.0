@@ -19,6 +19,7 @@ const createAuthRoutes = (ioc: Container): Router => {
   router.post("/login", ctrl.login);
   router.get("/refresh", refreshMiddleware, ctrl.refreshTokens);
   router.use(authMiddleware({ strict: true }));
+  router.put("/change-password", ctrl.changePassword);
   router.get("/refresh/external", ctrl.refreshExternalTokens);
   router.get("/logout", ctrl.logout);
 
