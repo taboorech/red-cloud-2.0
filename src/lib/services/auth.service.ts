@@ -11,6 +11,8 @@ import { UserProviderCredentialsModel } from "../db/models/user-provider-credent
 import { UserRefreshTokenModel } from "../db/models/user-refresh-token.model";
 import { UserRole } from "../enum/user.enum";
 import { UserHashCredentialsService } from "./user-hash-credentials.sevice";
+import { mailerTransporter } from "../constants/smtp";
+import { resetPasswordMailFormat } from "../utils/reset-password-mail-format";
 
 @injectable()
 export class AuthService {
@@ -323,5 +325,82 @@ export class AuthService {
         browser,
       })
       .delete();
+  }
+
+  public async resetPassword({ email }: { email: string }): Promise<void> {
+    const user = await UserModel.query().findOne({
+      email,
+    });
+
+    if (!user) {
+      throw new AppError(404, "User not found");
+    }
+
+    const credentials = await UserProviderCredentialsModel.query().findOne({
+      user_id: user.id,
+      provider: Provider.LOCAL,
+    });
+
+    if (!credentials) {
+      throw new AppError(404, "No credentials found");
+    }
+
+    const resetToken = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.ACCESS_TOKEN_SECRET!,
+      { expiresIn: "15m" } as SignOptions,
+    );
+
+    const resetLink = `${process.env.UI_HOST_URL}${process.env.UI_PASSWORD_RESET_CALLBACK_PATH}?token=${resetToken}`;
+
+    await mailerTransporter().sendMail({
+      from: process.env.SMTP_FROM,
+      to: email,
+      subject: "Password reset",
+      html: resetPasswordMailFormat(user.username, resetLink),
+    });
+  }
+
+  public async confirmResetPassword({
+    token,
+    newPassword,
+  }: {
+    token: string;
+    newPassword: string;
+  }): Promise<void> {
+    let payload: { id: number; email: string };
+
+    try {
+      payload = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as {
+        id: number;
+        email: string;
+      };
+    } catch {
+      throw new AppError(400, "Invalid or expired reset token");
+    }
+
+    const user = await UserModel.query().findById(payload.id);
+
+    if (!user) {
+      throw new AppError(404, "User not found");
+    }
+
+    const credentials = await UserProviderCredentialsModel.query().findOne({
+      user_id: user.id,
+      provider: Provider.LOCAL,
+    });
+
+    if (!credentials) {
+      throw new AppError(404, "No credentials found");
+    }
+
+    const hashPassword = await bcrypt.hash(
+      newPassword,
+      parseInt(process.env.BCRYPT_SALT_ROUNDS || "10"),
+    );
+
+    await credentials.$query().patch({
+      credentials: { password: hashPassword },
+    });
   }
 }

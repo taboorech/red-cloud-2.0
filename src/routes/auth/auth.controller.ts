@@ -1,11 +1,13 @@
 import { browserHeader } from "@app/lib/constants/app";
 import { AuthService } from "@app/lib/services/auth.service";
 import {
+  confirmResetPasswordValidation,
   exchangeCodeValidation,
   getAuthUrlValidation,
   loginValidation,
   logoutValidation,
   refreshTokensValidation,
+  resetPasswordValidation,
   signUpValidation,
 } from "@app/lib/validation/auth.scheme";
 import { userIdValidation } from "@app/lib/validation/main.scheme";
@@ -21,6 +23,9 @@ export default class AuthController {
     this.login = this.login.bind(this);
     this.refreshTokens = this.refreshTokens.bind(this);
     this.logout = this.logout.bind(this);
+    this.refreshExternalTokens = this.refreshExternalTokens.bind(this);
+    this.resetPassword = this.resetPassword.bind(this);
+    this.confirmResetPassword = this.confirmResetPassword.bind(this);
   }
 
   public async getAuthUrl(req: Request, res: Response) {
@@ -113,6 +118,32 @@ export default class AuthController {
       userId: req.user?.id,
     });
     await this.authService.logout({ userId, browser });
+
+    res.json({
+      status: "OK",
+    });
+  }
+
+  public async resetPassword(req: Request, res: Response): Promise<void> {
+    const { email } = resetPasswordValidation.parse(req.body);
+
+    await this.authService.resetPassword({ email });
+
+    res.json({
+      status: "OK",
+    });
+  }
+
+  public async confirmResetPassword(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    const { token, password } = confirmResetPasswordValidation.parse(req.body);
+
+    await this.authService.confirmResetPassword({
+      token,
+      newPassword: password,
+    });
 
     res.json({
       status: "OK",
