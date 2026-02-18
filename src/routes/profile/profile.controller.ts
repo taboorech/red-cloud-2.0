@@ -39,7 +39,10 @@ export default class ProfileController {
       ...req.body,
     });
 
-    const updatedUser = await this.profileService.updateProfile(parsed);
+    const updatedUser = await this.profileService.updateProfile({
+      ...parsed,
+      avatar: req.file,
+    });
 
     res.json({
       status: "OK",

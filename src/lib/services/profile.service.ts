@@ -14,6 +14,10 @@ import { UserRefreshTokenModel } from "../db/models/user-refresh-token.model";
 import { SongActionsModel, SongAction } from "../db/models/song-actions.model";
 import { SongListeningsModel } from "../db/models/song-listenings.model";
 import { PlaylistModel } from "../db/models/playlists.model";
+import { unlink } from "fs/promises";
+import path from "path";
+import { storageFolder } from "../constants/app";
+import { buildFileUrl } from "../utils/file-save";
 
 @injectable()
 export default class ProfileService {
@@ -54,16 +58,29 @@ export default class ProfileService {
     userId,
     username,
     country,
-  }: z.infer<typeof updateProfileSchema>): Promise<IUser> {
+    avatar,
+  }: z.infer<typeof updateProfileSchema> & {
+    avatar?: Express.Multer.File;
+  }): Promise<IUser> {
     const user = await UserModel.query().findOne({ id: userId });
 
     if (!user) {
       throw new AppError(404, "User not found");
     }
 
+    if (user.avatar) {
+      try {
+        const filename = new URL(user.avatar).pathname.split("/").pop()!;
+        await unlink(path.join(storageFolder, filename));
+      } catch {
+        // Ignore if file doesn't exist
+      }
+    }
+
     const updatedUser = await user.$query().patchAndFetch({
       username,
       country,
+      avatar: avatar ? buildFileUrl(avatar.filename) : undefined,
     });
 
     return updatedUser;
