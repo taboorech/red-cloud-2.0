@@ -13,6 +13,7 @@ export default class ProfileController {
     this.getProfile = this.getProfile.bind(this);
     this.updateProfile = this.updateProfile.bind(this);
     this.changeUserPassword = this.changeUserPassword.bind(this);
+    this.getStats = this.getStats.bind(this);
   }
 
   public async getProfile(req: Request, res: Response) {
@@ -59,6 +60,17 @@ export default class ProfileController {
 
     res.json({
       status: "OK",
+    });
+  }
+
+  public async getStats(req: Request, res: Response) {
+    const userId = req.user?.id!;
+
+    const stats = await this.profileService.getUserStats(userId);
+
+    res.json({
+      status: "OK",
+      data: stats,
     });
   }
 }

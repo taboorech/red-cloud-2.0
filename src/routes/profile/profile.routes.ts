@@ -12,6 +12,7 @@ const createProfileRoutes = (ioc: Container): Router => {
   const upload = multer({ storage: multerStorage });
 
   router.get("/", ctrl.getProfile);
+  router.get("/stats", ctrl.getStats);
   router.put("/", upload.single("avatar"), ctrl.updateProfile);
   router.put("/password", ctrl.changeUserPassword);
 
