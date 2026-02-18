@@ -8,6 +8,7 @@ const createProfileRoutes = (ioc: Container): Router => {
   const ctrl = ioc.get(ProfleController);
 
   router.get("/", ctrl.getProfile);
+  router.get("/stats", ctrl.getStats);
   router.put("/", ctrl.updateProfile);
   router.put("/password", ctrl.changeUserPassword);
 

@@ -11,6 +11,9 @@ import { Provider } from "../enum/provider.enum";
 import * as bcrypt from "bcrypt";
 import { SubscriptionStatus } from "../constants/payment";
 import { UserRefreshTokenModel } from "../db/models/user-refresh-token.model";
+import { SongActionsModel, SongAction } from "../db/models/song-actions.model";
+import { SongListeningsModel } from "../db/models/song-listenings.model";
+import { PlaylistModel } from "../db/models/playlists.model";
 
 @injectable()
 export default class ProfileService {
@@ -116,5 +119,26 @@ export default class ProfileService {
       .where({ id: credentials.id });
 
     await UserRefreshTokenModel.query().delete().where({ user_id: user.id });
+  }
+
+  public async getUserStats(userId: number) {
+    const [likedCount, dislikedCount, listeningsCount, playlistsCount] =
+      await Promise.all([
+        SongActionsModel.query()
+          .where({ user_id: userId, action: SongAction.LIKE })
+          .resultSize(),
+        SongActionsModel.query()
+          .where({ user_id: userId, action: SongAction.DISLIKE })
+          .resultSize(),
+        SongListeningsModel.query().where({ user_id: userId }).resultSize(),
+        PlaylistModel.query().where({ owner_id: userId }).resultSize(),
+      ]);
+
+    return {
+      likedCount,
+      dislikedCount,
+      listeningsCount,
+      playlistsCount,
+    };
   }
 }

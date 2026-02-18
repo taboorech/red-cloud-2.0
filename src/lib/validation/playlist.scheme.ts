@@ -17,6 +17,7 @@ const getPlaylistByIdSchema = playlistIdSchema.extend(
 const getPlaylistsSchema = zod
   .object({
     withOwner: zod.coerce.boolean().optional().default(false),
+    onlyPublic: zod.coerce.boolean().optional().default(false),
   })
   .extend(paginationValidation.shape)
   .extend(playlistSameFieldsSchema.shape);

@@ -63,6 +63,7 @@ export class PlaylistService {
     search,
     withSongs,
     withOwner,
+    onlyPublic,
   }: {
     userId?: number;
   } & z.infer<typeof getPlaylistsSchema>): Promise<IPlaylist[]> {
@@ -76,7 +77,7 @@ export class PlaylistService {
       }
 
       builder.where((subBuilder) => {
-        if (!userId) {
+        if (!userId || onlyPublic) {
           subBuilder.where("is_public", true);
           return;
         }
