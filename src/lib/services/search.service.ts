@@ -47,7 +47,12 @@ export default class SearchService {
     if (type === SearchType.ALL || type === SearchType.PLAYLISTS) {
       promises.push(
         this.playlistService
-          .getPlaylists({ search, withSongs: true, withOwner: true })
+          .getPlaylists({
+            search,
+            withSongs: true,
+            withOwner: true,
+            onlyPublic: true,
+          })
           .then((playlists) => {
             results.playlists = playlists;
           }),

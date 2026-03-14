@@ -6,11 +6,13 @@ import fs from "fs";
 import { storageFolder } from "../constants/app";
 import { AppError } from "../errors/app.error";
 import { buildFileUrl } from "../utils/file-save";
+import { SongModel } from "../db/models/song.model";
 import {
   AIGenerationRequest,
   AIGenerationResult,
   GeneratedImage,
 } from "../types/ai";
+import { unlink } from "fs/promises";
 
 @injectable()
 export class AIService {
@@ -60,6 +62,84 @@ export class AIService {
     }
   }
 
+  public async generateLyricsWithAudioFile(
+    model: AIModel = AIModel.GPT_4O_TRANSCRIBE,
+    audioFilePath?: string,
+    songId?: number,
+  ): Promise<string> {
+    let audioUrl: string;
+    let isUrl = false;
+
+    if (songId) {
+      logger().info(`Generating lyrics from song ID: ${songId}`);
+
+      const song = await SongModel.query().findById(songId);
+      if (!song) {
+        throw new AppError(404, "Song not found");
+      }
+
+      audioUrl = song.url;
+      isUrl = true;
+    } else if (audioFilePath) {
+      logger().info(`Generating lyrics from audio file: ${audioFilePath}`);
+      audioUrl = audioFilePath;
+    } else {
+      throw new AppError(
+        400,
+        "Either audioFilePath or songId must be provided",
+      );
+    }
+
+    let tempFilePath: string | null = null;
+
+    try {
+      let audioFile: fs.ReadStream;
+
+      if (isUrl) {
+        tempFilePath = await this.downloadAudioFile(audioUrl);
+        audioFile = fs.createReadStream(tempFilePath);
+      } else {
+        // Local file path
+        if (!fs.existsSync(audioUrl)) {
+          throw new AppError(404, "Audio file not found");
+        }
+        audioFile = fs.createReadStream(audioUrl);
+      }
+
+      const response = await openAIClient().audio.transcriptions.create({
+        file: audioFile,
+        model,
+        response_format: "text",
+        temperature: 0,
+        prompt:
+          "Transcribe the complete audio file, including all lyrics and spoken content.",
+      });
+
+      if (!response) {
+        throw new Error("Invalid response from OpenAI");
+      }
+
+      logger().info(`Successfully generated lyrics from audio`);
+
+      return response;
+    } catch (error) {
+      logger().error("Error generating lyrics with OpenAI:", error);
+      throw new AppError(
+        500,
+        `Failed to generate lyrics with OpenAI ${(error as Error).message}`,
+      );
+    } finally {
+      // Clean up temp file if it was created
+      if (tempFilePath) {
+        try {
+          await unlink(tempFilePath);
+        } catch (cleanupError) {
+          logger().error("Error cleaning up temp file:", cleanupError);
+        }
+      }
+    }
+  }
+
   private async saveBase64Image(result: GeneratedImage) {
     if (!fs.existsSync(storageFolder)) {
       fs.mkdirSync(storageFolder, { recursive: true });
@@ -77,5 +157,26 @@ export class AIService {
         logger().error(`Failed to save base64 image ${result.id}:`, error);
       }
     }
+  }
+
+  private async downloadAudioFile(audioUrl: string): Promise<string> {
+    const response = await fetch(audioUrl);
+    if (!response.ok) {
+      throw new AppError(404, "Audio file not found at URL");
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    const urlParts = audioUrl.split(".");
+    const extension =
+      urlParts.length > 1 ? urlParts[urlParts.length - 1].split("?")[0] : "mp3";
+
+    const tempFileName = `temp_audio_${Date.now()}_${Math.random().toString(36).substring(2)}.${extension}`;
+    const tempFilePath = `${storageFolder}/${tempFileName}`;
+
+    fs.writeFileSync(tempFilePath, buffer);
+
+    return tempFilePath;
   }
 }

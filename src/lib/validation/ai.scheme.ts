@@ -6,4 +6,18 @@ const generateImageSchema = zod.object({
   model: zod.enum(AIModel).default(AIModel.GPT_IMAGE_1_MINI).optional(),
 });
 
-export { generateImageSchema };
+const generateLyricsWithAudioFileSchema = zod
+  .object({
+    audioFile: zod.string().min(1, "Audio file path is required").optional(),
+    songId: zod
+      .number()
+      .int()
+      .positive("Song ID must be a positive integer")
+      .optional(),
+    model: zod.enum(AIModel).default(AIModel.GPT_4O_TRANSCRIBE).optional(),
+  })
+  .refine((data) => data.audioFile || data.songId, {
+    message: "Either audioFile or songId must be provided",
+  });
+
+export { generateImageSchema, generateLyricsWithAudioFileSchema };
