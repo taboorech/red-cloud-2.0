@@ -6,6 +6,9 @@ exports.up = function (knex) {
     table.integer("user_id").unsigned().references("id").inTable(`${schema}.users`).onDelete("CASCADE");
     table.string("content_type", 50).notNullable();
     table.text("result").nullable();
+    table.integer("input_tokens").unsigned().nullable();
+    table.integer("output_tokens").unsigned().nullable();
+    table.decimal("cost", 10, 6).nullable();
     table.jsonb("metadata").nullable();
     table.timestamps(true, true);
 

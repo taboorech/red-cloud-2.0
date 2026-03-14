@@ -9,6 +9,7 @@ import { buildFileUrl } from "../utils/file-save";
 import { SongModel } from "../db/models/song.model";
 import { UserActivityService } from "./user-activity.service";
 import { ContentType } from "../db/models/user-activity.model";
+import { calculateCost } from "../utils/cost-calculator";
 import {
   AIGenerationRequest,
   AIGenerationResult,
@@ -18,12 +19,15 @@ import { unlink } from "fs/promises";
 
 @injectable()
 export class AIService {
-  constructor(@inject(UserActivityService) private userActivityService: UserActivityService) {}
+  constructor(
+    @inject(UserActivityService)
+    private userActivityService: UserActivityService,
+  ) {}
 
-  public async generateImage({
-    prompt,
-    model = AIModel.GPT_IMAGE_1_MINI,
-  }: AIGenerationRequest, userId?: number): Promise<AIGenerationResult> {
+  public async generateImage(
+    { prompt, model = AIModel.GPT_IMAGE_1_MINI }: AIGenerationRequest,
+    userId?: number,
+  ): Promise<AIGenerationResult> {
     logger().info(`Generating image with OpenAI:`, {
       prompt,
       model,
@@ -48,11 +52,21 @@ export class AIService {
 
       await this.saveBase64Image(imageData);
 
+      const cost = calculateCost({
+        model,
+        inputTokenCount: 0,
+        outputTokenCount: 0,
+        imageCount: 1,
+      });
+
       if (userId) {
         await this.userActivityService.logActivity({
           userId,
           contentType: ContentType.COVER_GENERATION,
           result: imageData.url,
+          inputTokens: 0,
+          outputTokens: 0,
+          cost,
           metadata: {
             objectId: imageData.id,
             prompt: prompt.substring(0, 100),
@@ -136,11 +150,23 @@ export class AIService {
         throw new Error("Invalid response from OpenAI");
       }
 
+      const estimatedInputTokens = 300;
+      const estimatedOutputTokens = Math.ceil(response.length / 4); // ~4 chars per token
+      const cost = calculateCost({
+        model,
+        inputTokenCount: estimatedInputTokens,
+        outputTokenCount: estimatedOutputTokens,
+        imageCount: 0,
+      });
+
       if (userId) {
         await this.userActivityService.logActivity({
           userId,
           contentType: ContentType.LYRICS_TRANSCRIPTION,
           result: response,
+          inputTokens: estimatedInputTokens,
+          outputTokens: estimatedOutputTokens,
+          cost,
           metadata: {
             objectId: songId?.toString(),
             model,

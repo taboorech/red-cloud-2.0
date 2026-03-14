@@ -22,14 +22,22 @@ const generateLyricsWithAudioFileSchema = zod
     message: "Either audioFile or songId must be provided",
   });
 
-const getUserActivityQuerySchema = zod.object({
+const activityFieldsSchema = zod.object({
   contentType: zod.enum(ContentType).optional(),
   startDate: zod.string().optional(),
   endDate: zod.string().optional(),
-}).extend(paginationValidation.shape).extend(userIdValidation.shape);
+});
 
-export { 
-  generateImageSchema, 
-  generateLyricsWithAudioFileSchema, 
-  getUserActivityQuerySchema 
+const getUserActivityQuerySchema = activityFieldsSchema
+  .extend(paginationValidation.shape)
+  .extend(userIdValidation.shape);
+const getAdminUsersActivityQuerySchema = activityFieldsSchema.extend(
+  paginationValidation.shape,
+);
+
+export {
+  generateImageSchema,
+  generateLyricsWithAudioFileSchema,
+  getUserActivityQuerySchema,
+  getAdminUsersActivityQuerySchema,
 };

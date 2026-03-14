@@ -20,6 +20,9 @@ export interface IUserActivity {
   user_id: number;
   content_type: ContentType;
   result?: string;
+  input_tokens?: number;
+  output_tokens?: number;
+  cost?: number;
   metadata?: IUserActivityMetadata;
   created_at: Date;
   updated_at: Date;
@@ -32,6 +35,9 @@ export class UserActivityModel extends Model implements IUserActivity {
   user_id!: number;
   content_type!: ContentType;
   result?: string;
+  input_tokens?: number;
+  output_tokens?: number;
+  cost?: number;
   metadata?: IUserActivityMetadata;
   created_at!: Date;
   updated_at!: Date;
