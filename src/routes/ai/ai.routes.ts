@@ -16,6 +16,7 @@ const createAIRoutes = (ioc: Container): Router => {
     upload.single("audioFile"),
     ctrl.generateLyrics,
   );
+  router.get("/user-activity", ctrl.getUserActivity);
 
   return router;
 };

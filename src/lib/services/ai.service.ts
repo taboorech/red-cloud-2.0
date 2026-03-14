@@ -1,4 +1,4 @@
-import { injectable } from "inversify";
+import { injectable, inject } from "inversify";
 import { AIModel, AIProvider } from "../constants/ai";
 import { openAIClient } from "../openai/openai.client";
 import { logger } from "../logger";
@@ -7,6 +7,8 @@ import { storageFolder } from "../constants/app";
 import { AppError } from "../errors/app.error";
 import { buildFileUrl } from "../utils/file-save";
 import { SongModel } from "../db/models/song.model";
+import { UserActivityService } from "./user-activity.service";
+import { ContentType } from "../db/models/user-activity.model";
 import {
   AIGenerationRequest,
   AIGenerationResult,
@@ -16,12 +18,12 @@ import { unlink } from "fs/promises";
 
 @injectable()
 export class AIService {
-  constructor() {}
+  constructor(@inject(UserActivityService) private userActivityService: UserActivityService) {}
 
   public async generateImage({
     prompt,
     model = AIModel.GPT_IMAGE_1_MINI,
-  }: AIGenerationRequest): Promise<AIGenerationResult> {
+  }: AIGenerationRequest, userId?: number): Promise<AIGenerationResult> {
     logger().info(`Generating image with OpenAI:`, {
       prompt,
       model,
@@ -46,6 +48,20 @@ export class AIService {
 
       await this.saveBase64Image(imageData);
 
+      if (userId) {
+        await this.userActivityService.logActivity({
+          userId,
+          contentType: ContentType.COVER_GENERATION,
+          result: imageData.url,
+          metadata: {
+            objectId: imageData.id,
+            prompt: prompt.substring(0, 100),
+            model,
+            provider: AIProvider.OPENAI,
+          },
+        });
+      }
+
       logger().info(`Successfully generated 1 image with OpenAI`);
 
       return {
@@ -66,6 +82,7 @@ export class AIService {
     model: AIModel = AIModel.GPT_4O_TRANSCRIBE,
     audioFilePath?: string,
     songId?: number,
+    userId?: number,
   ): Promise<string> {
     let audioUrl: string;
     let isUrl = false;
@@ -117,6 +134,21 @@ export class AIService {
 
       if (!response) {
         throw new Error("Invalid response from OpenAI");
+      }
+
+      if (userId) {
+        await this.userActivityService.logActivity({
+          userId,
+          contentType: ContentType.LYRICS_TRANSCRIPTION,
+          result: response,
+          metadata: {
+            objectId: songId?.toString(),
+            model,
+            provider: AIProvider.OPENAI,
+            audioSource: isUrl ? "url" : "upload",
+            textLength: response.length,
+          },
+        });
       }
 
       logger().info(`Successfully generated lyrics from audio`);

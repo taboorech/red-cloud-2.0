@@ -1,5 +1,7 @@
 import { z as zod } from "zod";
 import { AIModel } from "../constants/ai";
+import { ContentType } from "../db/models/user-activity.model";
+import { paginationValidation, userIdValidation } from "./main.scheme";
 
 const generateImageSchema = zod.object({
   prompt: zod.string().min(1).max(1000),
@@ -20,4 +22,14 @@ const generateLyricsWithAudioFileSchema = zod
     message: "Either audioFile or songId must be provided",
   });
 
-export { generateImageSchema, generateLyricsWithAudioFileSchema };
+const getUserActivityQuerySchema = zod.object({
+  contentType: zod.enum(ContentType).optional(),
+  startDate: zod.string().optional(),
+  endDate: zod.string().optional(),
+}).extend(paginationValidation.shape).extend(userIdValidation.shape);
+
+export { 
+  generateImageSchema, 
+  generateLyricsWithAudioFileSchema, 
+  getUserActivityQuerySchema 
+};
