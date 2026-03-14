@@ -21,6 +21,7 @@ import { NotificationController } from "./routes/notification/notification.contr
 import { NotificationService } from "./lib/services/notification.service";
 import { AIController } from "./routes/ai/ai.controller";
 import { AIService } from "./lib/services/ai.service";
+import { UserActivityService } from "./lib/services/user-activity.service";
 import { LyricsService } from "./lib/services/lyrics.service";
 import { DeepLClient } from "./lib/deepl/deepl.client";
 import { LyricsController } from "./routes/lyrics/lyrics.controller";
@@ -66,6 +67,7 @@ export async function constructIOC(): Promise<Container> {
   ioc.bind(PlaylistService).toSelf();
   ioc.bind(NotificationService).toSelf();
   ioc.bind(AIService).toSelf();
+  ioc.bind(UserActivityService).toSelf();
   ioc.bind(LyricsService).toSelf();
   ioc.bind(FriendsService).toSelf();
   ioc.bind(OnlineService).toSelf();
