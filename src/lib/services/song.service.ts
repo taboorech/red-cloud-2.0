@@ -66,6 +66,7 @@ export class SongService {
     search,
     genres,
     withGenres,
+    owned,
   }: z.infer<typeof getSongsSchema> & { userId?: number }) {
     const songs = await SongModel.query()
       .modify((builder) => {
@@ -99,6 +100,19 @@ export class SongService {
       .where((builder) => {
         if (!userId) {
           builder.where(`${SongModel.tableName}.is_public`, true);
+          return;
+        }
+
+        if (owned) {
+          builder.whereExists(
+            SongAuthorsModel.query()
+              .select(1)
+              .whereColumn(
+                `${SongAuthorsModel.tableName}.song_id`,
+                `${SongModel.tableName}.id`,
+              )
+              .where(`${SongAuthorsModel.tableName}.user_id`, userId),
+          );
           return;
         }
 

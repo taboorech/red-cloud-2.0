@@ -2,9 +2,9 @@ import { AIService } from "@app/lib/services/ai.service";
 import { UserActivityService } from "@app/lib/services/user-activity.service";
 import {
   generateImageSchema,
-  generateLyricsWithAudioFileSchema,
   getUserActivityQuerySchema,
   getAdminUsersActivityQuerySchema,
+  generateLyricsSchema,
 } from "@app/lib/validation/ai.scheme";
 import { Request, Response } from "express";
 import { inject, injectable } from "inversify";
@@ -36,16 +36,15 @@ export class AIController {
   }
 
   public async generateLyrics(req: Request, res: Response) {
-    const { audioFile, songId, model } =
-      generateLyricsWithAudioFileSchema.parse({
-        audioFile: req.file?.path,
-        songId: req.body?.songId ? parseInt(req.body.songId) : undefined,
-        model: req.body?.model,
-      });
+    const { audioFile, songId, model } = generateLyricsSchema.parse({
+      audioFile: req.file?.path,
+      songId: req.body?.songId ? parseInt(req.body.songId) : undefined,
+      model: req.body?.model,
+    });
 
     const userId = req.user?.id;
 
-    const aiResponse = await this.aiService.generateLyricsWithAudioFile(
+    const aiResponse = await this.aiService.generateLyrics(
       model,
       audioFile,
       songId,

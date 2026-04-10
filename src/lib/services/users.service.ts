@@ -22,6 +22,7 @@ export default class UsersService {
     ids,
   }: z.infer<typeof paginationValidation>): Promise<UserModel[]> {
     const users = await UserModel.query()
+      .withGraphFetched("userBans")
       .modify((builder) => {
         if (ids?.length) builder.whereIn("id", ids);
 
@@ -64,7 +65,7 @@ export default class UsersService {
     }
 
     const banRecord = await UserBansModel.query().findOne({
-      userId: user.id,
+      user_id: user.id,
     });
 
     if (action === UserAccess.BAN) {
