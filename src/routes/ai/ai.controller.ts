@@ -38,10 +38,17 @@ export class AIController {
   }
 
   public async generatePlaylistCover(req: Request, res: Response) {
-    const { playlistId } = generatePlaylistCoverSchema.parse(req.params);
+    const { playlistId, prompt } = generatePlaylistCoverSchema.parse({
+      ...req.params,
+      ...req.body,
+    });
     const userId = req.user!.id;
 
-    const imageUrl = await this.aiService.generatePlaylistCover(playlistId, userId);
+    const imageUrl = await this.aiService.generatePlaylistCover({
+      playlistId,
+      userId,
+      userPrompt: prompt,
+    });
 
     res.json({ status: "OK", data: imageUrl });
   }

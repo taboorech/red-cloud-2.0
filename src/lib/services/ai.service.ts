@@ -203,10 +203,15 @@ export class AIService {
     }
   }
 
-  public async generatePlaylistCover(
-    playlistId: number,
-    userId: number,
-  ): Promise<string> {
+  public async generatePlaylistCover({
+    playlistId,
+    userId,
+    userPrompt,
+  }: {
+    playlistId: number;
+    userId: number;
+    userPrompt?: string;
+  }): Promise<string> {
     logger().info(`Generating playlist cover`, { playlistId, userId });
 
     const playlist = await this.playlistService.getPlaylistById({
@@ -248,14 +253,20 @@ export class AIService {
       .filter(Boolean)
       .join("\n\n");
 
-    logger().info(`Requesting creative prompt from GPT`, { playlistId });
+    let rawPrompt: string;
 
-    const chatResponse = await openAIClient().chat.completions.create({
-      model: AIModel.GPT_4O_MINI,
-      messages: [
-        {
-          role: "system",
-          content: `You are a creative art director for a music streaming platform.
+    if (userPrompt) {
+      logger().info(`Using user-provided prompt for playlist ${playlistId}`);
+      rawPrompt = userPrompt;
+    } else {
+      logger().info(`Requesting creative prompt from GPT`, { playlistId });
+
+      const chatResponse = await openAIClient().chat.completions.create({
+        model: AIModel.GPT_4O_MINI,
+        messages: [
+          {
+            role: "system",
+            content: `You are a creative art director for a music streaming platform.
 Your job: write a DALL-E image generation prompt for a playlist cover.
 
 Step-by-step thinking:
@@ -271,18 +282,19 @@ Hard rules:
 - Do NOT use the genre name as a literal visual element
 - Avoid crowds and silhouettes of people unless truly essential
 - Output ONLY the final image prompt, no commentary`,
-        },
-        {
-          role: "user",
-          content: userMessage,
-        },
-      ],
-      max_tokens: 350,
-      temperature: 0.85,
-    });
+          },
+          {
+            role: "user",
+            content: userMessage,
+          },
+        ],
+        max_tokens: 350,
+        temperature: 0.85,
+      });
 
-    const rawPrompt =
-      chatResponse.choices[0]?.message?.content?.trim() ?? userMessage;
+      rawPrompt =
+        chatResponse.choices[0]?.message?.content?.trim() ?? userMessage;
+    }
 
     const creativePrompt = `${rawPrompt} Style: modern digital art, cinematic lighting, sharp details, no text, no letters.`;
 

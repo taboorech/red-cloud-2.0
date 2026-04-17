@@ -37,6 +37,7 @@ const getAdminUsersActivityQuerySchema = activityFieldsSchema.extend(
 
 const generatePlaylistCoverSchema = zod.object({
   playlistId: zod.coerce.number().int().positive(),
+  prompt: zod.string().min(1).max(1000).optional(),
 });
 
 export {
