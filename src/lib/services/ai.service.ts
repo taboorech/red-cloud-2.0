@@ -7,6 +7,8 @@ import { storageFolder } from "../constants/app";
 import { AppError } from "../errors/app.error";
 import { buildFileUrl } from "../utils/file-save";
 import { SongModel } from "../db/models/song.model";
+import { GenreModel } from "../db/models/genres.model";
+import { PlaylistItemModel } from "../db/models/playlist-item.model";
 import { UserActivityService } from "./user-activity.service";
 import { ContentType } from "../db/models/user-activity.model";
 import { calculateCost } from "../utils/cost-calculator";
@@ -16,12 +18,15 @@ import {
   GeneratedImage,
 } from "../types/ai";
 import { unlink } from "fs/promises";
+import { PlaylistService } from "./playlist.service";
+import { PlaylistModel } from "../db/models/playlists.model";
 
 @injectable()
 export class AIService {
   constructor(
     @inject(UserActivityService)
     private userActivityService: UserActivityService,
+    @inject(PlaylistService) private playlistService: PlaylistService,
   ) {}
 
   public async generateImage(
@@ -196,6 +201,108 @@ export class AIService {
         }
       }
     }
+  }
+
+  public async generatePlaylistCover(
+    playlistId: number,
+    userId: number,
+  ): Promise<string> {
+    logger().info(`Generating playlist cover`, { playlistId, userId });
+
+    const playlist = await this.playlistService.getPlaylistById({
+      userId,
+      playlistId,
+      withSongs: false,
+    });
+
+    type SongWithGenres = SongModel & { genres: GenreModel[] };
+
+    const songs = (await SongModel.query()
+      .join(
+        PlaylistItemModel.tableName,
+        `${PlaylistItemModel.tableName}.song_id`,
+        `${SongModel.tableName}.id`,
+      )
+      .where(`${PlaylistItemModel.tableName}.playlist_id`, playlistId)
+      .withGraphFetched("genres")) as SongWithGenres[];
+
+    logger().info(`Fetched ${songs.length} songs for playlist ${playlistId}`);
+
+    const songTitles = songs.map((s) => s.title).join(", ");
+    const genreNames = [
+      ...new Set(songs.flatMap((s) => s.genres.map((g) => g.title))),
+    ].join(", ");
+    const lyricsSnippets = songs
+      .filter((s) => s.text)
+      .map((s) => `"${s.title}": ${s.text!.slice(0, 150)}`)
+      .join("\n");
+
+    const userMessage = [
+      `Playlist: "${playlist.title}"`,
+      genreNames ? `Genres: ${genreNames}` : "",
+      songTitles ? `Track list: ${songTitles}` : "",
+      lyricsSnippets
+        ? `Lyrics (use these to extract the emotional core):\n${lyricsSnippets}`
+        : "No lyrics available — rely on genres and track titles.",
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
+    logger().info(`Requesting creative prompt from GPT`, { playlistId });
+
+    const chatResponse = await openAIClient().chat.completions.create({
+      model: AIModel.GPT_4O_MINI,
+      messages: [
+        {
+          role: "system",
+          content: `You are a creative art director for a music streaming platform.
+Your job: write a DALL-E image generation prompt for a playlist cover.
+
+Step-by-step thinking:
+1. Extract dominant emotions and imagery from the lyrics (loneliness, joy, tension, nostalgia, etc.)
+2. Translate genre into MOOD and COLOR PALETTE only — never into literal places or objects tied to the genre name
+3. Choose a visual concept: an abstract scene, a landscape, a close-up texture, a surreal composition — whatever fits the emotional core
+
+Visual style must be: modern digital art, cinematic, high-quality, sharp — NOT oil painting, NOT impressionism, NOT watercolor
+
+Hard rules:
+- ZERO text, letters, signs, words, or labels anywhere in the image
+- Do NOT depict: bars, cafes, concert halls, stages — these are genre clichés
+- Do NOT use the genre name as a literal visual element
+- Avoid crowds and silhouettes of people unless truly essential
+- Output ONLY the final image prompt, no commentary`,
+        },
+        {
+          role: "user",
+          content: userMessage,
+        },
+      ],
+      max_tokens: 350,
+      temperature: 0.85,
+    });
+
+    const rawPrompt =
+      chatResponse.choices[0]?.message?.content?.trim() ?? userMessage;
+
+    const creativePrompt = `${rawPrompt} Style: modern digital art, cinematic lighting, sharp details, no text, no letters.`;
+
+    logger().info(`Generated creative prompt for playlist ${playlistId}`, {
+      prompt: creativePrompt,
+    });
+
+    const result = await this.generateImage({ prompt: creativePrompt }, userId);
+
+    await PlaylistModel.query()
+      .where("id", playlistId)
+      .andWhere("owner_id", userId)
+      .update({ image_url: result.imageUrl ?? null });
+
+    logger().info(`Playlist cover saved`, {
+      playlistId,
+      imageUrl: result.imageUrl,
+    });
+
+    return result.imageUrl!;
   }
 
   private async saveBase64Image(result: GeneratedImage) {

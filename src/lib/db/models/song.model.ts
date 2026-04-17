@@ -38,6 +38,7 @@ export class SongModel extends Model implements ISong {
   is_public!: boolean;
   metadata?: ISongMetadata;
   authors?: SongAuthorsModel[];
+  genres?: GenreModel[]
 
   roles?: string[];
 

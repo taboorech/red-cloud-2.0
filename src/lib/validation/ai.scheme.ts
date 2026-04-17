@@ -35,9 +35,14 @@ const getAdminUsersActivityQuerySchema = activityFieldsSchema.extend(
   paginationValidation.shape,
 );
 
+const generatePlaylistCoverSchema = zod.object({
+  playlistId: zod.coerce.number().int().positive(),
+});
+
 export {
   generateImageSchema,
   generateLyricsSchema,
+  generatePlaylistCoverSchema,
   getUserActivityQuerySchema,
   getAdminUsersActivityQuerySchema,
 };
