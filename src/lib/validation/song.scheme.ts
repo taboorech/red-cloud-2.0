@@ -20,6 +20,7 @@ const getSongSchema = getSongsSameFieldsSchema.extend(songIdSchema.shape);
 const getSongsSchema = zod
   .object({
     genres: genreSchema.optional(),
+    owned: zod.coerce.boolean().optional(),
   })
   .extend(getSongsSameFieldsSchema.shape)
   .extend(paginationValidation.shape);

@@ -92,7 +92,7 @@ export class AIService {
     }
   }
 
-  public async generateLyricsWithAudioFile(
+  public async generateLyrics(
     model: AIModel = AIModel.GPT_4O_TRANSCRIBE,
     audioFilePath?: string,
     songId?: number,

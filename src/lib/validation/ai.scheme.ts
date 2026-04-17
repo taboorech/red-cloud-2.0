@@ -8,7 +8,7 @@ const generateImageSchema = zod.object({
   model: zod.enum(AIModel).default(AIModel.GPT_IMAGE_1_MINI).optional(),
 });
 
-const generateLyricsWithAudioFileSchema = zod
+const generateLyricsSchema = zod
   .object({
     audioFile: zod.string().min(1, "Audio file path is required").optional(),
     songId: zod
@@ -37,7 +37,7 @@ const getAdminUsersActivityQuerySchema = activityFieldsSchema.extend(
 
 export {
   generateImageSchema,
-  generateLyricsWithAudioFileSchema,
+  generateLyricsSchema,
   getUserActivityQuerySchema,
   getAdminUsersActivityQuerySchema,
 };
