@@ -12,6 +12,7 @@ export class LyricsController {
     this.getSongLyrics = this.getSongLyrics.bind(this);
     this.translateSongLyrics = this.translateSongLyrics.bind(this);
     this.getSupportedLanguages = this.getSupportedLanguages.bind(this);
+    this.getUserTranslation = this.getUserTranslation.bind(this);
   }
 
   public async getSongLyrics(req: Request, res: Response): Promise<void> {
@@ -43,6 +44,22 @@ export class LyricsController {
       status: "OK",
       data: translation,
     });
+  }
+
+  public async getUserTranslation(req: Request, res: Response): Promise<void> {
+    const { songId, targetLanguage } = translateSongLyricsSchema.parse({
+      ...req.params,
+      ...req.query,
+    });
+    const userId = req.user!.id;
+
+    const translation = await this.lyricsService.getUserTranslation(
+      userId,
+      songId,
+      targetLanguage,
+    );
+
+    res.json({ status: "OK", data: translation });
   }
 
   public async getSupportedLanguages(

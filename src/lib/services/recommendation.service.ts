@@ -9,6 +9,7 @@ import { SongGenresModel } from "../db/models/song-genres.model";
 import { openAIClient } from "../openai/openai.client";
 import { logger } from "../logger";
 import { AIModel } from "../constants/ai";
+import { AppError } from "../errors/app.error";
 
 @injectable()
 export class RecommendationService {
@@ -143,7 +144,7 @@ export class RecommendationService {
       .findById(songId)
       .withGraphFetched("genres");
 
-    if (!song) throw new Error(`Song ${songId} not found`);
+    if (!song) throw new AppError(404, `Song ${songId} not found`);
 
     const genreTitles = song.genres?.map((g) => g.title).join(", ") ?? "";
     const text = [
