@@ -220,22 +220,20 @@ export class AIService {
       withSongs: false,
     });
 
-    type SongWithGenres = SongModel & { genres: GenreModel[] };
-
-    const songs = (await SongModel.query()
+    const songs = await SongModel.query()
       .join(
         PlaylistItemModel.tableName,
         `${PlaylistItemModel.tableName}.song_id`,
         `${SongModel.tableName}.id`,
       )
       .where(`${PlaylistItemModel.tableName}.playlist_id`, playlistId)
-      .withGraphFetched("genres")) as SongWithGenres[];
+      .withGraphFetched("genres");
 
     logger().info(`Fetched ${songs.length} songs for playlist ${playlistId}`);
 
     const songTitles = songs.map((s) => s.title).join(", ");
     const genreNames = [
-      ...new Set(songs.flatMap((s) => s.genres.map((g) => g.title))),
+      ...new Set(songs.flatMap((s) => s.genres?.map((g) => g.title))),
     ].join(", ");
     const lyricsSnippets = songs
       .filter((s) => s.text)
