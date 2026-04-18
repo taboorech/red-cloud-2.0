@@ -5,6 +5,7 @@ import {
   getUserActivityQuerySchema,
   getAdminUsersActivityQuerySchema,
   generateLyricsSchema,
+  generatePlaylistCoverSchema,
 } from "@app/lib/validation/ai.scheme";
 import { Request, Response } from "express";
 import { inject, injectable } from "inversify";
@@ -19,6 +20,7 @@ export class AIController {
   ) {
     this.generateImage = this.generateImage.bind(this);
     this.generateLyrics = this.generateLyrics.bind(this);
+    this.generatePlaylistCover = this.generatePlaylistCover.bind(this);
     this.getUserActivity = this.getUserActivity.bind(this);
     this.getAdminUsersActivity = this.getAdminUsersActivity.bind(this);
   }
@@ -33,6 +35,22 @@ export class AIController {
     );
 
     res.json({ status: "OK", data: aiResponse });
+  }
+
+  public async generatePlaylistCover(req: Request, res: Response) {
+    const { playlistId, prompt } = generatePlaylistCoverSchema.parse({
+      ...req.params,
+      ...req.body,
+    });
+    const userId = req.user!.id;
+
+    const imageUrl = await this.aiService.generatePlaylistCover({
+      playlistId,
+      userId,
+      userPrompt: prompt,
+    });
+
+    res.json({ status: "OK", data: imageUrl });
   }
 
   public async generateLyrics(req: Request, res: Response) {

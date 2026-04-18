@@ -140,6 +140,7 @@ export class PlaylistService {
     playlistId,
     title,
     isPublic,
+    imageUrl,
     image,
   }: {
     userId: number;
@@ -154,12 +155,19 @@ export class PlaylistService {
       throw new AppError(404, "Playlist not found");
     }
 
+    let resolvedImageUrl: string | null = playlist.image_url;
+    if (image) {
+      resolvedImageUrl = buildFileUrl(image.filename) ?? null;
+    } else if (imageUrl) {
+      resolvedImageUrl = imageUrl;
+    }
+
     const updatedPlaylist = await PlaylistModel.query()
       .where("id", playlistId)
       .update({
         title: title ?? playlist.title,
         is_public: isPublic ?? playlist.is_public,
-        image_url: image ? buildFileUrl(image.filename) : playlist.image_url,
+        image_url: resolvedImageUrl,
       })
       .returning("*")
       .first();
