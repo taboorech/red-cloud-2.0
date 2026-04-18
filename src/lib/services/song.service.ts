@@ -1,4 +1,5 @@
 import z from "zod";
+import { inject, injectable } from "inversify";
 import { SongModel } from "../db/models/song.model";
 import {
   createSongSchema,
@@ -17,9 +18,15 @@ import {
 import { RedisKeyGroup, RedisUtils } from "../utils/redis";
 import { ISongListeningRecord } from "../types/song";
 import { buildFileUrl } from "../utils/file-save";
+import { RecommendationService } from "./recommendation.service";
+import { logger } from "../logger";
 
+@injectable()
 export class SongService {
-  constructor() {}
+  constructor(
+    @inject(RecommendationService)
+    private recommendationService: RecommendationService,
+  ) {}
 
   public async getSong({
     userId,
@@ -255,6 +262,15 @@ export class SongService {
         )
       : [];
 
+    this.recommendationService
+      .generateSongEmbedding(newSong.id)
+      .catch((err) =>
+        logger().warn(
+          `Failed to generate embedding for song ${newSong.id}`,
+          err,
+        ),
+      );
+
     return { ...newSong, authors };
   }
 
@@ -403,6 +419,12 @@ export class SongService {
       "song_id",
       songId,
     );
+
+    this.recommendationService
+      .generateSongEmbedding(songId)
+      .catch((err) =>
+        logger().warn(`Failed to regenerate embedding for song ${songId}`, err),
+      );
 
     return { ...updatedSong, authors: updatedAuthors };
   }

@@ -13,6 +13,7 @@ const createAIRoutes = (ioc: Container): Router => {
   const ctrl = ioc.get(AIController);
 
   router.post("/generate-image", ctrl.generateImage);
+  router.post("/songs/:songId/embed", ctrl.generateSongEmbedding);
   router.post(
     "/playlists/:playlistId/generate-cover",
     ctrl.generatePlaylistCover,

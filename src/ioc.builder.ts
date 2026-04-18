@@ -30,6 +30,8 @@ import { FriendsService } from "./lib/services/friends.service";
 import { OnlineService } from "./lib/services/online.service";
 import { SearchController } from "./routes/search/search.controller";
 import SearchService from "./lib/services/search.service";
+import { RecommendationController } from "./routes/recommendation/recommendation.controller";
+import { RecommendationService } from "./lib/services/recommendation.service";
 
 export async function constructIOC(): Promise<Container> {
   const ioc = new Container();
@@ -53,6 +55,7 @@ export async function constructIOC(): Promise<Container> {
   ioc.bind(LyricsController).toSelf();
   ioc.bind(FriendsController).toSelf();
   ioc.bind(SearchController).toSelf();
+  ioc.bind(RecommendationController).toSelf();
 
   // </editor-fold>
 
@@ -72,6 +75,7 @@ export async function constructIOC(): Promise<Container> {
   ioc.bind(FriendsService).toSelf();
   ioc.bind(OnlineService).toSelf();
   ioc.bind(SearchService).toSelf();
+  ioc.bind(RecommendationService).toSelf();
 
   // </editor-fold>
 

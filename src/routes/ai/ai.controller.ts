@@ -1,4 +1,5 @@
 import { AIService } from "@app/lib/services/ai.service";
+import { RecommendationService } from "@app/lib/services/recommendation.service";
 import { UserActivityService } from "@app/lib/services/user-activity.service";
 import {
   generateImageSchema,
@@ -7,6 +8,7 @@ import {
   generateLyricsSchema,
   generatePlaylistCoverSchema,
 } from "@app/lib/validation/ai.scheme";
+import { generateSongEmbeddingSchema } from "@app/lib/validation/recommendation.scheme";
 import { Request, Response } from "express";
 import { inject, injectable } from "inversify";
 import dayjs from "dayjs";
@@ -17,12 +19,24 @@ export class AIController {
     @inject(AIService) private aiService: AIService,
     @inject(UserActivityService)
     private userActivityService: UserActivityService,
+    @inject(RecommendationService)
+    private recommendationService: RecommendationService,
   ) {
     this.generateImage = this.generateImage.bind(this);
     this.generateLyrics = this.generateLyrics.bind(this);
     this.generatePlaylistCover = this.generatePlaylistCover.bind(this);
+    this.generateSongEmbedding = this.generateSongEmbedding.bind(this);
     this.getUserActivity = this.getUserActivity.bind(this);
     this.getAdminUsersActivity = this.getAdminUsersActivity.bind(this);
+  }
+
+  public async generateSongEmbedding(req: Request, res: Response) {
+    const { songId } = generateSongEmbeddingSchema.parse(req.params);
+
+    const embedding =
+      await this.recommendationService.generateSongEmbedding(songId);
+
+    res.json({ status: "OK", data: { songId, dimensions: embedding.length } });
   }
 
   public async generateImage(req: Request, res: Response) {
