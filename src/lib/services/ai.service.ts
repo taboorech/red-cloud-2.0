@@ -304,12 +304,7 @@ Hard rules:
 
     const result = await this.generateImage({ prompt: creativePrompt }, userId);
 
-    await PlaylistModel.query()
-      .where("id", playlistId)
-      .andWhere("owner_id", userId)
-      .update({ image_url: result.imageUrl ?? null });
-
-    logger().info(`Playlist cover saved`, {
+    logger().info(`Playlist cover generated`, {
       playlistId,
       imageUrl: result.imageUrl,
     });

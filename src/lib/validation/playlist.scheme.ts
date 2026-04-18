@@ -24,6 +24,7 @@ const getPlaylistsSchema = zod
 const createPlaylistSchema = zod.object({
   title: zod.string().min(1).max(255),
   isPublic: zod.boolean().optional(),
+  imageUrl: zod.url().optional(),
 });
 const updatePlaylistSchema = playlistIdSchema.extend(
   createPlaylistSchema.partial().shape,
