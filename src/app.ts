@@ -24,6 +24,7 @@ import { storageFolder } from "./lib/constants/app";
 import { createLyricsRoutes } from "./routes/lyrics/lyrics.routes";
 import { createFriendsRoutes } from "./routes/friends/friends.routes";
 import { createSearchRoutes } from "./routes/search/search.routes";
+import { createRecommendationRoutes } from "./routes/recommendation/recommendation.routes";
 
 function createAPIV1Routes(ioc: Container): Router {
   const router = Router();
@@ -44,6 +45,7 @@ function createAPIV1Routes(ioc: Container): Router {
   router.use("/ai", createAIRoutes(ioc));
   router.use("/lyrics", createLyricsRoutes(ioc));
   router.use("/friends", createFriendsRoutes(ioc));
+  router.use("/recommendations", createRecommendationRoutes(ioc));
 
   return router;
 }

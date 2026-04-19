@@ -1,6 +1,7 @@
 import { inject, injectable } from "inversify";
 import { DeepLClient, LanguageOption } from "../deepl/deepl.client";
 import { SongService } from "./song.service";
+import { AIService } from "./ai.service";
 import { AppError } from "../errors/app.error";
 
 export interface LyricsTranslationRequest {
@@ -23,6 +24,7 @@ export class LyricsService {
   constructor(
     @inject(DeepLClient) private deepLClient: DeepLClient,
     @inject(SongService) private songService: SongService,
+    @inject(AIService) private aiService: AIService,
   ) {}
 
   public async getSongLyrics(userId: number, songId: number) {
@@ -67,6 +69,40 @@ export class LyricsService {
       songId: song.id,
       songTitle: song.title,
       originalText: song.text,
+      translatedText: translation.translatedText,
+      sourceLanguage: song.language || "unknown",
+      targetLanguage,
+      detectedSourceLang: translation.detectedSourceLang,
+    };
+  }
+
+  public async getUserTranslation(
+    userId: number,
+    songId: number,
+    targetLanguage: string,
+  ): Promise<LyricsTranslationResult> {
+    const song = await this.songService.getSong({ userId, songId });
+    if (!song) throw new AppError(404, "Song not found");
+
+    const text = song.text?.trim()
+      ? song.text
+      : await this.aiService.generateLyrics(
+          undefined,
+          undefined,
+          songId,
+          userId,
+        );
+
+    const translation = await this.deepLClient.translateText(
+      text,
+      targetLanguage,
+      song.language || undefined,
+    );
+
+    return {
+      songId: song.id,
+      songTitle: song.title,
+      originalText: text,
       translatedText: translation.translatedText,
       sourceLanguage: song.language || "unknown",
       targetLanguage,
