@@ -38,14 +38,14 @@ export async function createSocketServer(
   io.use(socketAuthMiddleware({ strict: true }));
 
   io.on("connection", async (socket) => {
-    await songStateSocketOnConnection(socket, ioc);
+    await songStateSocketOnConnection(socket, io, ioc);
     await notificationSocketOnConnection(socket, io, ioc);
     await onlineStatusSocketOnConnection(socket, ioc);
     await friendsOnlineSocketOnConnection(socket, io, ioc);
     groupRoomSocketHandlers(socket);
 
     socket.on("disconnect", async () => {
-      songStateSocketOnDisconnect(socket);
+      await songStateSocketOnDisconnect(socket, io);
       notificationSocketOnDisconnect(socket);
       await onlineStatusSocketOnDisconnect(socket, ioc);
       await friendsOnlineSocketOnDisconnect(socket, io, ioc);
