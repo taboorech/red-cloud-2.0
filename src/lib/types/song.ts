@@ -3,6 +3,7 @@ export interface SongState {
   currentTime: number;
   duration: number;
   isPlaying: boolean;
+  updatedAt?: number;
 
   roomOptions?: {
     roomId: number;
