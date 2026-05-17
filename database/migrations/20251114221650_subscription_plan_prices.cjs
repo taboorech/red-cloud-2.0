@@ -5,11 +5,14 @@ exports.up = async function(knex) {
     table.increments('id').primary();
     table.integer('subscription_plan_id').unsigned().notNullable().references('id').inTable('subscription_plans').onDelete('CASCADE');
     table.string('stripe_price_id').notNullable().unique();
-    table.string('currency').notNullable();
+    table.string('currency', 3).notNullable();
     table.decimal('amount', 10, 2).notNullable();
     table.string('billing_interval').notNullable();
 
     table.timestamps(true, true);
+
+    table.index('subscription_plan_id');
+    table.index(['subscription_plan_id', 'billing_interval']);
   });
 };
 

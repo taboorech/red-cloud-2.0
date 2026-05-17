@@ -9,6 +9,10 @@ exports.up = async function(knex) {
     table.boolean('is_public').notNullable().defaultTo(false);
 
     table.timestamps(true, true);
+
+    table.index('owner_id');
+    table.index('is_public');
+    table.index(['owner_id', 'is_public']);
   });
 };
 

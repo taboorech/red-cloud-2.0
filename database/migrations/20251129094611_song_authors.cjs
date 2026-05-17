@@ -5,9 +5,13 @@ exports.up = async function(knex) {
     table.increments('id').primary();
     table.integer('user_id').unsigned().notNullable().references('id').inTable('users').onDelete('CASCADE');
     table.integer('song_id').unsigned().notNullable().references('id').inTable('songs').onDelete('CASCADE');
-    table.string('role').notNullable()
+    table.string('role').notNullable();
 
     table.timestamps(true, true);
+
+    table.unique(['song_id', 'user_id', 'role'], 'uq_song_author_role');
+    table.index('user_id');
+    table.index('song_id');
   });
 };
 

@@ -7,6 +7,7 @@ exports.up = async function(knex) {
     table.integer('genre_id').unsigned().notNullable().references('id').inTable('genres').onDelete('CASCADE');
 
     table.unique(['song_id', 'genre_id'], 'uq_song_genre');
+    table.index('genre_id');
   });
 };
 

@@ -7,11 +7,13 @@ exports.up = async function(knex) {
     table.integer('user_id').unsigned().notNullable().references('id').inTable(`${schema}.users`).onDelete('CASCADE');
     table.integer('friend_id').unsigned().notNullable().references('id').inTable(`${schema}.users`).onDelete('CASCADE');
     table.string('status').notNullable();
-    
+
     table.timestamps(true, true);
-    
+
     table.unique(['user_id', 'friend_id']);
-    table.index(['user_id', 'friend_id']);
+    table.index('friend_id');
+    table.index(['user_id', 'status']);
+    table.index(['friend_id', 'status']);
   });
 };
 

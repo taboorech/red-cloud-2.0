@@ -6,13 +6,16 @@ exports.up = async function(knex) {
     table.string('title').notNullable().unique();
     table.string('description').notNullable();
 
-    table.string('stripe_product_id').notNullable().unique();
+    table.string('stripe_product_id').nullable().unique();
 
-    table.boolean('is_active').defaultTo(true)
-    table.boolean('is_public').defaultTo(true)
-    table.integer('sort_order').defaultTo(0)
+    table.boolean('is_active').notNullable().defaultTo(true);
+    table.boolean('is_public').notNullable().defaultTo(true);
+    table.integer('sort_order').notNullable().defaultTo(0);
 
     table.timestamps(true, true);
+
+    table.index('is_active');
+    table.index('sort_order');
   });
 };
 

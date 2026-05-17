@@ -3,7 +3,7 @@ const schema = process.env.DB_SCHEMA || 'public'
 exports.up = function (knex) {
   return knex.schema.createTable(`${schema}.user_activities`, function (table) {
     table.increments("id").primary();
-    table.integer("user_id").unsigned().references("id").inTable(`${schema}.users`).onDelete("CASCADE");
+    table.integer("user_id").unsigned().notNullable().references("id").inTable(`${schema}.users`).onDelete("CASCADE");
     table.string("content_type", 50).notNullable();
     table.text("result").nullable();
     table.integer("input_tokens").unsigned().nullable();

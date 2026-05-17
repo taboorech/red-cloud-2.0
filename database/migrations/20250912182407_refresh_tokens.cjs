@@ -8,6 +8,8 @@ exports.up = async function(knex) {
     table.string("token").notNullable().unique();
 
     table.timestamps(true, true);
+
+    table.index('user_id');
   });
 };
 

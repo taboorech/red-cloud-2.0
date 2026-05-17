@@ -19,10 +19,12 @@ exports.up = async function(knex) {
     
     table.timestamps(true, true);
     
+    table.index('type_id');
     table.index('recipient_id');
     table.index('sender_id');
     table.index(['recipient_id', 'is_read']);
     table.index(['recipient_id', 'status']);
+    table.index(['recipient_id', 'created_at']);
     table.index(['related_entity_type', 'related_entity_id']);
   });
 };
