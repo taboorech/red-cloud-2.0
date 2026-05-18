@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 
 import { Command } from "commander";
 import { createCryptoCommands } from "./crypto.commands";
+import { createSeedCommands } from "./seed.commands";
 
 async function boot() {
   dotenv.config({ path: ".env" });
@@ -16,6 +17,7 @@ async function boot() {
 
   // Define CLI commands here
   createCryptoCommands(program);
+  createSeedCommands(program);
 
   await program.parseAsync();
   process.exit(0);
