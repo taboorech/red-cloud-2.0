@@ -7,6 +7,9 @@ exports.up = async function(knex) {
     table.integer('user_id').unsigned().notNullable().references('id').inTable(`${schema}.users`).onDelete('CASCADE');
 
     table.timestamps(true, true);
+
+    table.unique(['playlist_id', 'user_id'], 'uq_playlist_member');
+    table.index('user_id');
   });
 };
 

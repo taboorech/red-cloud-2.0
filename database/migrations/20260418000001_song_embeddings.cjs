@@ -10,7 +10,7 @@ exports.up = function (knex) {
     table.timestamps(true, true);
 
     table.unique(["song_id"]);
-    table.index(["song_id"]);
+    table.index("model");
   });
 };
 

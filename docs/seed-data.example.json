@@ -1,0 +1,80 @@
+{
+  "users": [
+    {
+      "username": "demo_admin",
+      "email": "admin@example.com",
+      "password": "demo123",
+      "role": "admin",
+      "country": "UA"
+    },
+    {
+      "username": "demo_user",
+      "email": "user@example.com",
+      "password": "demo123",
+      "role": "user",
+      "country": "UA",
+      "avatar_url": "https://picsum.photos/seed/demo-user/256/256"
+    },
+    {
+      "username": "demo_artist",
+      "email": "artist@example.com",
+      "password": "demo123",
+      "role": "user"
+    },
+    {
+      "username": "demo_producer",
+      "email": "producer@example.com",
+      "password": "demo123",
+      "role": "user"
+    }
+  ],
+  "songs": [
+    {
+      "title": "Demo Track A",
+      "description": "Example song with a local audio file (placed in tmp/songs)",
+      "text": "Line 1\nLine 2",
+      "language": "en",
+      "duration_seconds": 200,
+      "audio_file": "demo-track-a.mp3",
+      "image_file": "demo-cover-a.jpg",
+      "is_public": true,
+      "metadata": { "release_year": 2024 },
+      "authors": [
+        { "username": "demo_artist", "role": "singer" },
+        { "username": "demo_producer", "role": "producer" }
+      ],
+      "genres": ["Pop", "Electronic"]
+    },
+    {
+      "title": "Demo Track B",
+      "description": "Example song with external CDN URLs (no local files needed)",
+      "language": "en",
+      "duration_seconds": 180,
+      "audio_url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+      "image_url": "https://picsum.photos/seed/demo-track-b/600/600",
+      "is_public": true,
+      "authors": [{ "username": "demo_artist", "role": "singer" }],
+      "genres": ["Indie"]
+    }
+  ],
+  "playlists": [
+    {
+      "title": "Demo Playlist",
+      "owner": "demo_user",
+      "is_public": true,
+      "image_url": "https://picsum.photos/seed/demo-playlist/800/800",
+      "songs": ["Demo Track A", "Demo Track B"],
+      "members": ["demo_artist"]
+    }
+  ],
+  "friends": [
+    { "user": "demo_user", "friend": "demo_artist", "status": "accepted" },
+    { "user": "demo_artist", "friend": "demo_user", "status": "accepted" }
+  ],
+  "favorites": [
+    {
+      "user": "demo_user",
+      "songs": ["Demo Track A"]
+    }
+  ]
+}

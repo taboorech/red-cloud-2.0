@@ -10,9 +10,19 @@ const genres = [
   { title: 'Country' },
   { title: 'Reggae' },
   { title: 'Blues' },
-  { title: 'Metal' }
-]
+  { title: 'Metal' },
+  { title: 'Folk' },
+  { title: 'Indie' },
+  { title: 'R&B' },
+  { title: 'Soul' },
+  { title: 'Punk' },
+  { title: 'Alternative' },
+  { title: 'House' },
+  { title: 'Techno' },
+  { title: 'Ambient' },
+  { title: 'Lo-fi' },
+];
 
-exports.seed = async function(knex) {
+exports.seed = async function (knex) {
   await knex(`${schema}.genres`).insert(genres);
 };

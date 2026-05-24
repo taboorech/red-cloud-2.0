@@ -8,6 +8,7 @@ exports.up = async function(knex) {
     table.timestamps(true, true);
 
     table.unique(['song_id', 'user_id'], 'uq_favorite_song_user');
+    table.index('user_id');
   });
 };
 

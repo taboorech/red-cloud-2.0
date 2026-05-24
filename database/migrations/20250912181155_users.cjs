@@ -6,10 +6,13 @@ exports.up = async function(knex) {
     table.string("username").notNullable();
     table.string("email").notNullable().unique();
     table.string("avatar").nullable();
-    table.string("role").notNullable();
+    table.string('role').notNullable();
     table.string('country').nullable();
 
     table.timestamps(true, true)
+
+    table.index('role');
+    table.index('username');
   });
 };
 

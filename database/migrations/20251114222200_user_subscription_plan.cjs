@@ -7,7 +7,7 @@ exports.up = async function(knex) {
     table.integer('subscription_plan_id').unsigned().notNullable().references('id').inTable('subscription_plans').onDelete('CASCADE');
 
     table.enu('status', ['active', 'canceled', 'trialing']).notNullable();
-    table.string('stripe_subscription_id').nullable();
+    table.string('stripe_subscription_id').nullable().unique();
 
     table.timestamp('started_at').notNullable();
     table.timestamp('current_period_start').nullable();
@@ -15,6 +15,10 @@ exports.up = async function(knex) {
     table.timestamp('trial_ends_at').nullable();
 
     table.timestamps(true, true);
+
+    table.index('user_id');
+    table.index('subscription_plan_id');
+    table.index(['user_id', 'status']);
   });
 };
 
