@@ -22,7 +22,7 @@ import { UserRole } from "@app/lib/enum/user.enum";
 import { Provider } from "@app/lib/enum/provider.enum";
 import { SubscriptionStatus } from "@app/lib/constants/payment";
 
-interface DemoUser {
+interface SeedUser {
   username: string;
   email: string;
   password: string;
@@ -32,12 +32,12 @@ interface DemoUser {
   avatar_url?: string;
 }
 
-interface DemoSongAuthor {
+interface SeedSongAuthor {
   username: string;
   role: string;
 }
 
-interface DemoSong {
+interface SeedSong {
   title: string;
   description?: string;
   text?: string;
@@ -49,11 +49,11 @@ interface DemoSong {
   image_url?: string;
   is_public?: boolean;
   metadata?: Record<string, unknown>;
-  authors: DemoSongAuthor[];
+  authors: SeedSongAuthor[];
   genres?: string[];
 }
 
-interface DemoPlaylist {
+interface SeedPlaylist {
   title: string;
   owner: string;
   is_public?: boolean;
@@ -63,23 +63,23 @@ interface DemoPlaylist {
   members?: string[];
 }
 
-interface DemoFriend {
+interface SeedFriend {
   user: string;
   friend: string;
   status: FriendStatus;
 }
 
-interface DemoFavorite {
+interface SeedFavorite {
   user: string;
   songs: string[];
 }
 
-interface DemoData {
-  users?: DemoUser[];
-  songs?: DemoSong[];
-  playlists?: DemoPlaylist[];
-  friends?: DemoFriend[];
-  favorites?: DemoFavorite[];
+interface SeedData {
+  users?: SeedUser[];
+  songs?: SeedSong[];
+  playlists?: SeedPlaylist[];
+  friends?: SeedFriend[];
+  favorites?: SeedFavorite[];
 }
 
 interface CommandOptions {
@@ -125,7 +125,7 @@ function resolveMedia(
 }
 
 async function seedUsers(
-  users: DemoUser[],
+  users: SeedUser[],
   imagesDir: string,
 ): Promise<Map<string, number>> {
   const usernameToId = new Map<string, number>();
@@ -181,7 +181,7 @@ async function seedUsers(
 }
 
 async function seedSongs(
-  songs: DemoSong[],
+  songs: SeedSong[],
   audioDir: string,
   imagesDir: string,
   usernameToId: Map<string, number>,
@@ -254,7 +254,7 @@ async function seedSongs(
 }
 
 async function seedPlaylists(
-  playlists: DemoPlaylist[],
+  playlists: SeedPlaylist[],
   imagesDir: string,
   usernameToId: Map<string, number>,
   titleToSongId: Map<string, number>,
@@ -306,7 +306,7 @@ async function seedPlaylists(
 }
 
 async function seedFriends(
-  friends: DemoFriend[],
+  friends: SeedFriend[],
   usernameToId: Map<string, number>,
 ): Promise<void> {
   for (const f of friends) {
@@ -325,7 +325,7 @@ async function seedFriends(
 }
 
 async function seedFavorites(
-  favorites: DemoFavorite[],
+  favorites: SeedFavorite[],
   usernameToId: Map<string, number>,
   titleToSongId: Map<string, number>,
 ): Promise<void> {
@@ -362,7 +362,7 @@ export function createSeedCommands(program: Command) {
         throw new Error(`Manifest not found: ${options.data}`);
       }
       const raw = fs.readFileSync(options.data, "utf-8");
-      const data = JSON.parse(raw) as DemoData;
+      const data = JSON.parse(raw) as SeedData;
 
       prettyLog("seed:demo starting", {
         users: data.users?.length ?? 0,
