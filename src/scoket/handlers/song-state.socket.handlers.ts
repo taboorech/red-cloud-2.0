@@ -6,6 +6,7 @@ import { Socket, Server } from "socket.io";
 import { SongService } from "@app/lib/services/song.service";
 import { Container } from "inversify";
 import { FriendModel, FriendStatus } from "@app/lib/db/models/friends.model";
+import { PrivacyService } from "@app/lib/services/privacy.service";
 
 const SONG_STATE_TTL = 60 * 60 * 24 * 7; // 7 days in seconds
 
@@ -89,7 +90,7 @@ export async function songStateSocketOnConnection(
   socket.on("song-state:clear", async () => {
     try {
       await clearSongState(userId);
-      await broadcastFriendStopped(io, userId);
+      await broadcastFriendStopped(io, ioc, userId);
       socket.emit("song-state:cleared");
       logger().info(`[SOCKET][SONG STATE] User ${userId} cleared state`);
     } catch (err) {
@@ -102,6 +103,7 @@ export async function songStateSocketOnConnection(
     try {
       const friendIds = await getUserFriendIds(userId);
       const songService = ioc.get(SongService);
+      const privacyService = ioc.get(PrivacyService);
       const result: Array<{
         userId: number;
         song: any;
@@ -112,6 +114,8 @@ export async function songStateSocketOnConnection(
       }> = [];
 
       for (const friendId of friendIds) {
+        const allowed = await privacyService.canViewListening(userId, friendId);
+        if (!allowed) continue;
         const stateString = await RedisUtils.getRedisKey({
           group: RedisKeyGroup.APP,
           key: generateCurrentSongStateRedisKey(friendId),
@@ -152,6 +156,11 @@ async function broadcastSongStateToFriends(
   const friendIds = await getUserFriendIds(userId);
   if (friendIds.length === 0) return;
 
+  const recipients = await ioc
+    .get(PrivacyService)
+    .filterListeningRecipients(userId, friendIds);
+  if (recipients.length === 0) return;
+
   const songService = ioc.get(SongService);
   const song = await songService.getSong({
     userId,
@@ -168,19 +177,30 @@ async function broadcastSongStateToFriends(
     updatedAt: Date.now(),
   };
 
-  for (const friendId of friendIds) {
+  for (const friendId of recipients) {
     io.to(`user:${friendId}`).emit("friend-song-state", payload);
   }
 }
 
-async function broadcastFriendStopped(io: Server, userId: number) {
+async function broadcastFriendStopped(
+  io: Server,
+  ioc: Container,
+  userId: number,
+) {
   const friendIds = await getUserFriendIds(userId);
-  for (const friendId of friendIds) {
+  const recipients = await ioc
+    .get(PrivacyService)
+    .filterListeningRecipients(userId, friendIds);
+  for (const friendId of recipients) {
     io.to(`user:${friendId}`).emit("friend-song-stopped", { userId });
   }
 }
 
-export async function songStateSocketOnDisconnect(socket: Socket, io: Server) {
+export async function songStateSocketOnDisconnect(
+  socket: Socket,
+  io: Server,
+  ioc: Container,
+) {
   socket.removeAllListeners("song-state:update");
   socket.removeAllListeners("song-state:clear");
   socket.removeAllListeners("get-friends-listening");
@@ -188,7 +208,7 @@ export async function songStateSocketOnDisconnect(socket: Socket, io: Server) {
   const userId = socket.handshake.auth?.user?.id;
   if (!userId) return;
   try {
-    await broadcastFriendStopped(io, userId);
+    await broadcastFriendStopped(io, ioc, userId);
   } catch (err) {
     logger().error("[SOCKET][SONG STATE][disconnect] Error:", err);
   }

@@ -8,7 +8,7 @@ import { Request, Response } from "express";
 import { inject, injectable } from "inversify";
 
 @injectable()
-export default class ProfileController {
+export class ProfileController {
   constructor(@inject(ProfileService) private profileService: ProfileService) {
     this.getProfile = this.getProfile.bind(this);
     this.updateProfile = this.updateProfile.bind(this);

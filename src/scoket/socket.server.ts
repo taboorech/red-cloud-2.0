@@ -19,6 +19,7 @@ import {
   friendsOnlineSocketOnConnection,
   friendsOnlineSocketOnDisconnect,
 } from "./handlers/friends-online.socket.handlers";
+import { attachPrivacyBroadcastHandler } from "./handlers/privacy-broadcast.handler";
 
 export async function createSocketServer(
   httpServer = http.createServer(),
@@ -37,6 +38,8 @@ export async function createSocketServer(
 
   io.use(socketAuthMiddleware({ strict: true }));
 
+  await attachPrivacyBroadcastHandler(io, ioc);
+
   io.on("connection", async (socket) => {
     await songStateSocketOnConnection(socket, io, ioc);
     await notificationSocketOnConnection(socket, io, ioc);
@@ -45,7 +48,7 @@ export async function createSocketServer(
     groupRoomSocketHandlers(socket);
 
     socket.on("disconnect", async () => {
-      await songStateSocketOnDisconnect(socket, io);
+      await songStateSocketOnDisconnect(socket, io, ioc);
       notificationSocketOnDisconnect(socket);
       await onlineStatusSocketOnDisconnect(socket, ioc);
       await friendsOnlineSocketOnDisconnect(socket, io, ioc);

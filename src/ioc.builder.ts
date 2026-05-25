@@ -5,7 +5,7 @@ import { AuthService } from "./lib/services/auth.service";
 import { GoogleClient } from "./lib/google/google.client";
 import UsersController from "./routes/users/users.controller";
 import UsersService from "./lib/services/users.service";
-import ProfileController from "./routes/profile/profile.controller";
+import { ProfileController } from "./routes/profile/profile.controller";
 import ProfileService from "./lib/services/profile.service";
 import { UserHashCredentialsService } from "./lib/services/user-hash-credentials.sevice";
 import GenreController from "./routes/genre/genre.controller";
@@ -32,6 +32,8 @@ import { SearchController } from "./routes/search/search.controller";
 import SearchService from "./lib/services/search.service";
 import { RecommendationController } from "./routes/recommendation/recommendation.controller";
 import { RecommendationService } from "./lib/services/recommendation.service";
+import { PrivacyService } from "./lib/services/privacy.service";
+import { PrivacyController } from "./routes/profile/privacy.controller";
 
 export async function constructIOC(): Promise<Container> {
   const ioc = new Container();
@@ -56,6 +58,7 @@ export async function constructIOC(): Promise<Container> {
   ioc.bind(FriendsController).toSelf();
   ioc.bind(SearchController).toSelf();
   ioc.bind(RecommendationController).toSelf();
+  ioc.bind(PrivacyController).toSelf();
 
   // </editor-fold>
 
@@ -76,6 +79,7 @@ export async function constructIOC(): Promise<Container> {
   ioc.bind(OnlineService).toSelf();
   ioc.bind(SearchService).toSelf();
   ioc.bind(RecommendationService).toSelf();
+  ioc.bind(PrivacyService).toSelf();
 
   // </editor-fold>
 
