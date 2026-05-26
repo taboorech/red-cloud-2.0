@@ -193,9 +193,7 @@ async function seedSongs(
   for (const s of songs) {
     const audioUrl = resolveMedia(audioDir, s.audio_file, s.audio_url);
     if (!audioUrl) {
-      throw new Error(
-        `Song "${s.title}" needs either audio_file or audio_url`,
-      );
+      throw new Error(`Song "${s.title}" needs either audio_file or audio_url`);
     }
     const imageUrl = resolveMedia(imagesDir, s.image_file, s.image_url);
 
@@ -386,11 +384,7 @@ export function createSeedCommands(program: Command) {
         titleToSongId,
       );
       await seedFriends(data.friends ?? [], usernameToId);
-      await seedFavorites(
-        data.favorites ?? [],
-        usernameToId,
-        titleToSongId,
-      );
+      await seedFavorites(data.favorites ?? [], usernameToId, titleToSongId);
 
       prettyLog("seed:demo done");
     });

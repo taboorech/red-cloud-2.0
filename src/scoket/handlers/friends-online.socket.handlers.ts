@@ -2,6 +2,7 @@ import { Socket, Server } from "socket.io";
 import { Container } from "inversify";
 import { logger } from "@app/lib/logger";
 import { FriendModel, FriendStatus } from "@app/lib/db/models/friends.model";
+import { PrivacyService } from "@app/lib/services/privacy.service";
 
 export async function friendsOnlineSocketOnConnection(
   socket: Socket,
@@ -24,9 +25,14 @@ export async function friendsOnlineSocketOnConnection(
       .where("user_id", userId)
       .where("status", FriendStatus.accepted);
 
+    const recipients = await ioc.get(PrivacyService).filterPresenceRecipients(
+      userId,
+      userFriends.map((f) => f.friend_id),
+    );
+
     // Notify all friends that this user is online
-    for (const friend of userFriends) {
-      io.to(`user:${friend.friend_id}`).emit("friend-online", {
+    for (const friendId of recipients) {
+      io.to(`user:${friendId}`).emit("friend-online", {
         userId: userId,
         status: "online",
         timestamp: new Date().toISOString(),
@@ -34,7 +40,7 @@ export async function friendsOnlineSocketOnConnection(
     }
 
     logger().info(
-      `[SOCKET][FRIENDS ONLINE] User ${userId} connected, notified ${userFriends.length} friends`,
+      `[SOCKET][FRIENDS ONLINE] User ${userId} connected, notified ${recipients.length}/${userFriends.length} friends`,
     );
   } catch (err) {
     logger().error("[SOCKET][FRIENDS ONLINE] Connection error:", err);
@@ -48,6 +54,7 @@ export async function friendsOnlineSocketOnConnection(
         .where("status", FriendStatus.accepted)
         .withGraphFetched("friend");
 
+      const privacyService = ioc.get(PrivacyService);
       const onlineFriends = [];
 
       for (const friend of userFriends) {
@@ -55,16 +62,21 @@ export async function friendsOnlineSocketOnConnection(
           `user:${friend.friend_id}`,
         );
         const isOnline = friendRoom && friendRoom.size > 0;
+        if (!isOnline) continue;
 
-        if (isOnline) {
-          onlineFriends.push({
-            id: friend.friend_id,
-            username: friend.friend?.username,
-            avatar: friend.friend?.avatar,
-            isOnline: true,
-            lastSeen: new Date().toISOString(),
-          });
-        }
+        const visible = await privacyService.canViewPresence(
+          userId,
+          friend.friend_id,
+        );
+        if (!visible) continue;
+
+        onlineFriends.push({
+          id: friend.friend_id,
+          username: friend.friend?.username,
+          avatar: friend.friend?.avatar,
+          isOnline: true,
+          lastSeen: new Date().toISOString(),
+        });
       }
 
       socket.emit("friends-online-list", {
@@ -94,9 +106,14 @@ export async function friendsOnlineSocketOnDisconnect(
       .where("user_id", userId)
       .where("status", FriendStatus.accepted);
 
+    const recipients = await ioc.get(PrivacyService).filterPresenceRecipients(
+      userId,
+      userFriends.map((f) => f.friend_id),
+    );
+
     // Notify all friends that this user is offline
-    for (const friend of userFriends) {
-      io.to(`user:${friend.friend_id}`).emit("friend-offline", {
+    for (const friendId of recipients) {
+      io.to(`user:${friendId}`).emit("friend-offline", {
         userId: userId,
         status: "offline",
         timestamp: new Date().toISOString(),
@@ -104,7 +121,7 @@ export async function friendsOnlineSocketOnDisconnect(
     }
 
     logger().info(
-      `[SOCKET][FRIENDS ONLINE] User ${userId} disconnected, notified ${userFriends.length} friends`,
+      `[SOCKET][FRIENDS ONLINE] User ${userId} disconnected, notified ${recipients.length}/${userFriends.length} friends`,
     );
   } catch (err) {
     logger().error("[SOCKET][FRIENDS ONLINE] Disconnect error:", err);
