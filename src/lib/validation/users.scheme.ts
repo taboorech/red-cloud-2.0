@@ -1,14 +1,14 @@
 import { z as zod } from "zod";
 import { paginationValidation, userIdValidation } from "./main.scheme";
-import { UserAccess, UserRole } from "../enum/user.enum";
+import { ASSIGNABLE_USER_ROLES, UserAccess } from "../enum/user.enum";
 
 const getAllUsersValidation = zod.object({}).extend(paginationValidation.shape);
 
 const updateUserRoleValidation = zod
   .object({
     role: zod.enum(
-      UserRole,
-      `User role must be one of ${Object.values(UserRole).join(", ")}`,
+      ASSIGNABLE_USER_ROLES,
+      `User role must be one of ${ASSIGNABLE_USER_ROLES.join(", ")}`,
     ),
   })
   .extend(userIdValidation.shape);

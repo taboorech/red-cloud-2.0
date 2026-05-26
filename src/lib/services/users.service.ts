@@ -6,7 +6,7 @@ import {
   changeUserAccessValidation,
   updateUserRoleValidation,
 } from "../validation/users.scheme";
-import { UserAccess } from "../enum/user.enum";
+import { UserAccess, UserRole } from "../enum/user.enum";
 import { UserBansModel } from "../db/models/user-bans.model";
 import { AppError } from "../errors/app.error";
 import dayjs from "dayjs";
@@ -44,6 +44,13 @@ export default class UsersService {
     userId,
     role,
   }: z.infer<typeof updateUserRoleValidation>): Promise<void> {
+    const target = await UserModel.query().findOne({ id: userId });
+    if (!target) {
+      throw new AppError(404, "User not found");
+    }
+    if (target.role === UserRole.OWNER) {
+      throw new AppError(403, "Cannot modify owner's role");
+    }
     await UserModel.query()
       .update({
         role,
@@ -62,6 +69,9 @@ export default class UsersService {
     });
     if (!user) {
       throw new AppError(404, "User not found");
+    }
+    if (user.role === UserRole.OWNER) {
+      throw new AppError(403, "Cannot change access of an owner");
     }
 
     const banRecord = await UserBansModel.query().findOne({
