@@ -99,9 +99,7 @@ export class PrivacyService {
   ): Promise<number[]> {
     if (friendIds.length === 0) return [];
     const settings = await this.getSettings(ownerId);
-    const exceptions = new Set(
-      await this.listHiddenFrom(ownerId, "presence"),
-    );
+    const exceptions = new Set(await this.listHiddenFrom(ownerId, "presence"));
 
     if (settings.presence_visibility === "nobody") {
       // whitelist: only listed exceptions can see
@@ -124,9 +122,7 @@ export class PrivacyService {
     if (presenceRecipients.length === 0) return [];
 
     const settings = await this.getSettings(ownerId);
-    const exceptions = new Set(
-      await this.listHiddenFrom(ownerId, "listening"),
-    );
+    const exceptions = new Set(await this.listHiddenFrom(ownerId, "listening"));
 
     if (settings.listening_visibility === "nobody") {
       return presenceRecipients.filter((id) => exceptions.has(id));

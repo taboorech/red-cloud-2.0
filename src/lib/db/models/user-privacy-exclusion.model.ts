@@ -2,7 +2,10 @@ import Model from "../knex-objection";
 
 export type ExclusionScope = "presence" | "listening";
 
-export const EXCLUSION_SCOPE_VALUES: ExclusionScope[] = ["presence", "listening"];
+export const EXCLUSION_SCOPE_VALUES: ExclusionScope[] = [
+  "presence",
+  "listening",
+];
 
 export interface IUserPrivacyExclusion {
   id: number;
