@@ -1,12 +1,12 @@
 import { inject, injectable } from "inversify";
 import { SongService } from "./song.service";
 import UsersService from "./users.service";
+import { IUser } from "../db/models/user.model";
 import z from "zod";
 import { searchSchema } from "../validation/search.scheme";
 import { PlaylistService } from "./playlist.service";
 import { SearchType } from "../constants/search";
 import { ISong } from "../db/models/song.model";
-import { IUser } from "../db/models/user.model";
 import { IPlaylist } from "../db/models/playlists.model";
 
 @injectable()

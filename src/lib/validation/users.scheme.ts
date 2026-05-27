@@ -22,8 +22,35 @@ const changeUserAccessValidation = zod
   })
   .extend(userIdValidation.shape);
 
+const setUserSubscriptionValidation = zod
+  .object({
+    planId: zod.coerce.number().int().positive(),
+    expiresAt: zod
+      .string()
+      .refine((s) => !Number.isNaN(Date.parse(s)), {
+        message: "expiresAt must be a valid date",
+      })
+      .nullable()
+      .optional(),
+  })
+  .extend(userIdValidation.shape);
+
+const giftSubscriptionValidation = zod
+  .object({
+    planId: zod.coerce.number().int().positive().optional(),
+    days: zod.coerce
+      .number()
+      .int("days must be an integer")
+      .positive("days must be positive")
+      .max(3650, "days cannot exceed 3650 (10 years)")
+      .nullable(),
+  })
+  .extend(userIdValidation.shape);
+
 export {
   getAllUsersValidation,
   updateUserRoleValidation,
   changeUserAccessValidation,
+  setUserSubscriptionValidation,
+  giftSubscriptionValidation,
 };

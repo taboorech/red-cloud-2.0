@@ -17,6 +17,16 @@ const createUsersRoutes = (ioc: Container): Router => {
     requireRole(UserRole.ADMIN),
     ctrl.changeUserAccess,
   );
+  router.put(
+    "/:userId/subscription",
+    requireRole(UserRole.ADMIN),
+    ctrl.setUserSubscription,
+  );
+  router.post(
+    "/:userId/subscription/gift",
+    requireRole(UserRole.ADMIN),
+    ctrl.giftSubscription,
+  );
 
   return router;
 };
