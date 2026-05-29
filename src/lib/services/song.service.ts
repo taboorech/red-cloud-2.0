@@ -4,6 +4,8 @@ import { SongModel } from "../db/models/song.model";
 import {
   createSongSchema,
   getSongsSchema,
+  listModerationSongsSchema,
+  moderateUpdateSongSchema,
   updateSongSchema,
 } from "../validation/song.scheme";
 import { AppError } from "../errors/app.error";
@@ -439,6 +441,70 @@ export class SongService {
       throw new AppError(403, "You are not authorized to delete this song");
     }
 
+    await song.$query().delete();
+  }
+
+  public async listSongsForModeration({
+    search,
+    isPublic,
+    limit,
+    offset,
+  }: z.infer<typeof listModerationSongsSchema>) {
+    return SongModel.query()
+      .withGraphFetched("[authors.user, genres]")
+      .modify((b) => {
+        if (search) b.whereILike(`${SongModel.tableName}.title`, `%${search}%`);
+        if (typeof isPublic === "boolean")
+          b.where(`${SongModel.tableName}.is_public`, isPublic);
+        if (limit) b.limit(limit);
+        if (offset) b.offset(offset);
+      })
+      .orderBy(`${SongModel.tableName}.id`, "desc");
+  }
+
+  public async moderateUpdateSong({
+    songId,
+    title,
+    description,
+    language,
+    isPublic,
+    genres: requestedGenres,
+  }: z.infer<typeof moderateUpdateSongSchema>) {
+    const song = await SongModel.query().findById(songId);
+    if (!song) {
+      throw new AppError(404, "Song not found");
+    }
+
+    const updated = await song.$query().patchAndFetch({
+      title,
+      description,
+      language,
+      is_public: isPublic,
+    });
+
+    if (requestedGenres) {
+      await SongGenresModel.query()
+        .where("song_id", songId)
+        .whereNotIn("genre_id", requestedGenres)
+        .delete();
+      const existing = await SongGenresModel.query().where("song_id", songId);
+      const existingIds = new Set(existing.map((g) => g.genre_id));
+      const toInsert = requestedGenres.filter((id) => !existingIds.has(id));
+      if (toInsert.length > 0) {
+        await SongGenresModel.query().insert(
+          toInsert.map((genreId) => ({ song_id: songId, genre_id: genreId })),
+        );
+      }
+    }
+
+    return updated;
+  }
+
+  public async moderateDeleteSong(songId: number) {
+    const song = await SongModel.query().findById(songId);
+    if (!song) {
+      throw new AppError(404, "Song not found");
+    }
     await song.$query().delete();
   }
 

@@ -3,6 +3,8 @@ import { Container } from "inversify";
 import { SongController } from "./song.controller";
 import { multerStorage } from "@app/lib/utils/multer";
 import multer from "multer";
+import { requireRole } from "@app/lib/utils/middlewares/user.middleware";
+import { UserRole } from "@app/lib/enum/user.enum";
 
 const createSongRoutes = (ioc: Container) => {
   const router = Router();
@@ -12,6 +14,21 @@ const createSongRoutes = (ioc: Container) => {
   const upload = multer({ storage: multerStorage });
 
   router.get("/favorites", ctrl.getFavoriteSongs);
+  router.get(
+    "/moderation",
+    requireRole(UserRole.OPERATOR, UserRole.ADMIN),
+    ctrl.listSongsForModeration,
+  );
+  router.put(
+    "/:songId/moderation",
+    requireRole(UserRole.OPERATOR, UserRole.ADMIN),
+    ctrl.moderateUpdateSong,
+  );
+  router.delete(
+    "/:songId/moderation",
+    requireRole(UserRole.OPERATOR, UserRole.ADMIN),
+    ctrl.moderateDeleteSong,
+  );
   router.get("/:songId", ctrl.getSong);
   router.get("/", ctrl.getSongs);
   router.post(
