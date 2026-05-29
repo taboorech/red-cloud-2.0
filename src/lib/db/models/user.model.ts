@@ -20,6 +20,16 @@ export interface IUser {
   favoriteSongs?: FavoriteSongsModel[];
 }
 
+export interface UserListItem extends Omit<IUser, "subscription"> {
+  userBans?: UserBansModel[];
+  subscription?: {
+    plan_id: number;
+    plan_title: string | null;
+    expires_at: string | null;
+    status: string;
+  };
+}
+
 export class UserModel extends Model implements IUser {
   static tableName = "users";
 

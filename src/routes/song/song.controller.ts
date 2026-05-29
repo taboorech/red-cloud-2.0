@@ -4,6 +4,8 @@ import {
   deleteSongSchema,
   getSongSchema,
   getSongsSchema,
+  listModerationSongsSchema,
+  moderateUpdateSongSchema,
   songActionsSchema,
   toggleFavoriteSongSchema,
   updateSongSchema,
@@ -22,6 +24,9 @@ export class SongController {
     this.deleteSong = this.deleteSong.bind(this);
     this.likeSong = this.likeSong.bind(this);
     this.dislikeSong = this.dislikeSong.bind(this);
+    this.listSongsForModeration = this.listSongsForModeration.bind(this);
+    this.moderateUpdateSong = this.moderateUpdateSong.bind(this);
+    this.moderateDeleteSong = this.moderateDeleteSong.bind(this);
   }
 
   public async getSong(req: Request, res: Response) {
@@ -165,5 +170,26 @@ export class SongController {
       status: "OK",
       data: action,
     });
+  }
+
+  public async listSongsForModeration(req: Request, res: Response) {
+    const parsed = listModerationSongsSchema.parse(req.query);
+    const songs = await this.songService.listSongsForModeration(parsed);
+    res.json({ status: "OK", data: songs });
+  }
+
+  public async moderateUpdateSong(req: Request, res: Response) {
+    const parsed = moderateUpdateSongSchema.parse({
+      ...req.params,
+      ...req.body,
+    });
+    const updated = await this.songService.moderateUpdateSong(parsed);
+    res.json({ status: "OK", data: updated });
+  }
+
+  public async moderateDeleteSong(req: Request, res: Response) {
+    const { songId } = deleteSongSchema.parse(req.params);
+    await this.songService.moderateDeleteSong(songId);
+    res.json({ status: "OK" });
   }
 }

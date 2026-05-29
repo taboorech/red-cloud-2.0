@@ -112,7 +112,9 @@ async function rebroadcastForUser(
 
     logger().info(
       `[PRIVACY BROADCAST]   → friend=${friendId} presence=${presenceEvent} listening=${
-        isOnline && canSeeListening && song ? "friend-song-state" : "friend-song-stopped"
+        isOnline && canSeeListening && song
+          ? "friend-song-state"
+          : "friend-song-stopped"
       }`,
     );
   }

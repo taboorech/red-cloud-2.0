@@ -35,7 +35,10 @@ export class PrivacyController {
 
   public async updatePrivacy(req: Request, res: Response) {
     const parsed = updatePrivacyValidation.parse(req.body);
-    const updated = await this.privacyService.updateSettings(req.user!.id, parsed);
+    const updated = await this.privacyService.updateSettings(
+      req.user!.id,
+      parsed,
+    );
     res.json({ status: "OK", data: updated });
   }
 
